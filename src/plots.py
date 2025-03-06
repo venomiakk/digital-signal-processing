@@ -20,4 +20,5 @@ def plot_signal(signal, time):
     plt.ylabel("Frequency")
     
     plt.tight_layout()
+    return plt
     plt.show()
