@@ -2,15 +2,9 @@ import numpy as np
 from plots import plot_signal
 
 
-def uniformly_distributed_noise():
+def uniformly_distributed_noise(A=1, t_start=0, d=2, sampling_rate=1000):
     # S1
-
-    # parameters
-    A = 1           # amplitude 
-    t_start = 0     # start time
-    d = 2           # duration
     t_end = t_start + d
-    sampling_rate = 1000  # Próbkowanie
 
     time = np.linspace(0, t_end, int(d * sampling_rate))
     signal = np.random.uniform(-A, A, len(time))
@@ -19,15 +13,12 @@ def uniformly_distributed_noise():
 
     return signal, time
 
-def gaussian_noise():
+def gaussian_noise(A=1, t_start=0, d=2, sampling_rate=1000):
     # TODO: czy trzeba skorzystac ze wzoru na rozkald normalny czy mozna tak jak nizej?
     # S2
     # parameters
-    A = 1           # amplitude 
-    t_start = 0     # start time
-    d = 2           # duration
+      # duration
     t_end = t_start + d
-    sampling_rate = 1000  # Próbkowanie
 
     time = np.linspace(0, t_end, int(d * sampling_rate))
     signal = A * np.random.normal(0, 1, len(time))
@@ -36,15 +27,10 @@ def gaussian_noise():
 
     return signal, time
 
-def sin_signal():
+def sin_signal(A=1, T=1, t_start=0, d=2, sampling_rate=1000):
     # TODO: Check if this is correct
     # S3
-    A = 1       # Amplituda
-    T = 1.0       # Okres (np. 1 sekunda, co oznacza częstotliwość 1 Hz)
-    t_start = 0      # start time
-    d = 2       # Czas trwania sygnału w sekundach
     t_end = t_start + d
-    sampling_rate = 1000  # Próbkowanie
 
     time = np.linspace(0, t_end, int(d * sampling_rate))
     signal = A * np.sin(2 * np.pi * (time - t_start) / T)
@@ -53,15 +39,10 @@ def sin_signal():
 
     return signal, time
 
-def sin_half_signal():
+def sin_half_signal(A=1, T=1, t_start=0, d=2, sampling_rate=1000):
     # S4
 
-    A = 1       # Amplituda
-    T = 1       # Okres (np. 1 sekunda, co oznacza częstotliwość 1 Hz)
-    t_start = 0      # start time
-    d = 2       # Czas trwania sygnału w sekundach
     t_end = t_start + d
-    sampling_rate = 1000  # Próbkowanie
 
     time = np.linspace(0, t_end, int(d * sampling_rate))
     signal = 0.5 * A * ((np.sin(2 * np.pi * (time - t_start) / T)) + np.abs(np.sin(2 * np.pi * (time - t_start) / T)))
@@ -70,14 +51,9 @@ def sin_half_signal():
 
     return signal, time
 
-def sin_twohalf_signal():
+def sin_twohalf_signal(A=1, T=1, t_start=0, d=2, sampling_rate=1000):
     # S5
-    A = 1       # Amplituda
-    T = 1.0       # Okres (np. 1 sekunda, co oznacza częstotliwość 1 Hz)
-    t_start = 0      # start time
-    d = 2       # Czas trwania sygnału w sekundach
     t_end = t_start + d
-    sampling_rate = 1000  # Próbkowanie
 
     time = np.linspace(0, t_end, int(d * sampling_rate))
     signal = A * np.abs(np.sin(2 * np.pi * (time - t_start) / T))
@@ -86,16 +62,11 @@ def sin_twohalf_signal():
 
     return signal, time
 
-def square_signal():
+def square_signal(A=1, T=1, kw=0.5, t_start=0, d=2, sampling_rate=1000):
     # TODO: Check if this is correct
     # S6
-    A = 1       # Amplituda
-    T = 1.0       # Okres (np. 1 sekunda, co oznacza częstotliwość 1 Hz)
-    kw = 0.35   # Współczynnik wypełnienia
-    t_start = 0      # start time
-    d = 2       # Czas trwania sygnału w sekundach
+
     t_end = t_start + d
-    sampling_rate = 1000  # Próbkowanie
 
     time = np.linspace(0, t_end, int(d * sampling_rate))
 
@@ -124,14 +95,10 @@ def triangle_signal():
     # S8
     pass
 
-def step_signal():
-    # S9
-    A = 1       # Amplituda
-    t_start = 0      # start time
-    d = 2       # Czas trwania sygnału w sekundach
+def step_signal(A=1, t_start=0, d=2, sampling_rate=1000):
+ # Czas trwania sygnału w sekundach
     t_end = t_start + d
     t_step = t_end / 2
-    sampling_rate = 1000  # Próbkowanie
 
     time = np.linspace(0, t_end, int(d * sampling_rate))
     signal = np.piecewise(time, [time < t_step, time >= t_step], [0, A])

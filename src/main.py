@@ -1,8 +1,11 @@
 from signals import sin_signal
-from interface import Interface
+from interface import SignalProcessingApp
+from PyQt5.QtWidgets import QApplication
 def main():
     #sin_signal()
-    interface = Interface()
+    app = QApplication([])
+    ex = SignalProcessingApp()
+    app.exec_()
 
 
 if __name__ == "__main__":

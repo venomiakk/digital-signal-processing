@@ -1,23 +1,24 @@
-from tkinter import *
-from tkinter.ttk import Combobox
-
-from matplotlib.backends._backend_tk import NavigationToolbar2Tk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QComboBox, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QTabWidget
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from plots import plot_signal
 from signals import *
-from enum import auto, Flag, Enum
+from plots import plot_signal
 
 
-class Interface:
-
+class SignalProcessingApp(QWidget):
     def __init__(self):
-        self.types_of_signal=("szum o rozkładzie jednostajnym", "szum gaussowski", "sygnał sinusoidalny",
-                     "sygnał sinusoidalny wyprostowany jednopołówkowo",
-                     "sygnał sinusoidalnym wyprostowany dwupołówkowo",
-                     "sygnał prostokątny", "sygnał prostokątny symetryczny",
-                     "sygnał trójkątny", "skok jednostkowy", "impuls jednostkowy",
-                     "szum impulsowy")
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle("Cyfrowe przetwarzanie sygnału")
+
+        self.types_of_signal = [
+            "szum o rozkładzie jednostajnym", "szum gaussowski", "sygnał sinusoidalny",
+            "sygnał sinusoidalny wyprostowany jednopołówkowo", "sygnał sinusoidalnym wyprostowany dwupołówkowo",
+            "sygnał prostokątny", "sygnał prostokątny symetryczny", "sygnał trójkątny",
+            "skok jednostkowy", "impuls jednostkowy", "szum impulsowy"
+        ]
 
         self.signal_functions = {
             "szum o rozkładzie jednostajnym": uniformly_distributed_noise,
@@ -33,119 +34,90 @@ class Interface:
             "szum impulsowy": impulse_noise
         }
 
-        self.window = Tk()
+        self.tab_widget = QTabWidget()
+        self.setLayout(QVBoxLayout())
+        self.layout().addWidget(self.tab_widget)
 
-        self.amplituda = DoubleVar()
-        self.t1 = DoubleVar()
-        self.t2 = DoubleVar()
-        self.duration = DoubleVar()
-        self.sampling = DoubleVar()
+        self.create_signal_tab()
+        self.create_operations_tab()
 
-        self.amplituda2 = DoubleVar()
-        self.t12 = DoubleVar()
-        self.t22 = DoubleVar()
-        self.duration2 = DoubleVar()
-        self.sampling2 = DoubleVar()
+        self.show()
 
-        self.window.title("Cyfrowe przetwarzanie sygnału")
-        self.lbl = Label(self.window, text="Wybierz rodzaj sygnału:")
-        self.lbl.grid(column=0, row=0)
-        self.choose_type = Combobox(self.window)
-        self.choose_type['values'] = self.types_of_signal
-        self.choose_type.current(1)
-        self.choose_type.grid(column=1, row=0)
-        self.parameters_text = Label(self.window, text="Parametry sygnału 1")
-        self.parameters_text.grid(column=0, row=1)
+    def create_signal_tab(self):
+        signal_tab = QWidget()
+        layout = QVBoxLayout()
+        signal_tab.setLayout(layout)
 
+        self.signal_col = self.create_signal_column("Parametry sygnału", self.plot_signal)
 
-        self.amplituda_label = Label(self.window, text="Amplituda:")
-        self.amplituda_label.grid(column=0, row=2)
-        self.amplituda_entry = Entry(self.window, textvariable=self.amplituda, font=('calibre', 10, 'normal'))
-        self.amplituda_entry.grid(column=1, row=2)
+        layout.addLayout(self.signal_col)
 
-        self.duration_label = Label(self.window, text="Czas trwania:")
-        self.duration_label.grid(column=0, row=3)
-        self.duration_entry = Entry(self.window, textvariable=self.duration, font=('calibre', 10, 'normal'))
-        self.duration_entry.grid(column=1, row=3)
+        self.canvas = FigureCanvas(Figure(figsize=(10, 6)))
+        layout.addWidget(self.canvas)
 
-        self.time1_label = Label(self.window, text="Czas 1:")
-        self.time1_label.grid(column=0, row=4)
-        self.t1_entry = Entry(self.window, textvariable=self.t1, font=('calibre', 10, 'normal'))
-        self.t1_entry.grid(column=1, row=4)
+        self.tab_widget.addTab(signal_tab, "Sygnały")
 
-        self.time2_label = Label(self.window, text="Czas 2:")
-        self.time2_label.grid(column=0, row=5)
-        self.t2_entry = Entry(self.window, textvariable=self.t2, font=('calibre', 10, 'normal'))
-        self.t2_entry.grid(column=1, row=5)
+    def create_operations_tab(self):
+        operations_tab = QWidget()
+        layout = QVBoxLayout()
+        operations_tab.setLayout(layout)
 
-        self.sampling_label = Label(self.window, text="Probkowanie:")
-        self.sampling_label.grid(column=0, row=6)
-        self.sampling_entry = Entry(self.window, textvariable=self.sampling, font=('calibre', 10, 'normal'))
-        self.sampling_entry.grid(column=1, row=6)
+        # Add widgets for operations on signals here
+        operation_label = QLabel("Operacje na sygnałach")
+        layout.addWidget(operation_label)
 
-        plot_button = Button(master=self.window,
-                             command=self.plot,
-                             height=2,
-                             width=10,
-                             text="Create")
+        self.tab_widget.addTab(operations_tab, "Operacje")
 
-        plot_button.grid(column=0, row=7)
+    def create_signal_column(self, title, plot_method):
+        col_layout = QVBoxLayout()
 
-        self.lbl12 = Label(self.window, text="Parametry sygnału 2")
-        self.lbl12.grid(column=0, row=8)
+        label = QLabel(title)
+        col_layout.addWidget(label)
 
-        self.amplituda_label2 = Label(self.window, text="Amplituda:")
-        self.amplituda_label2.grid(column=0, row=9)
-        self.amplituda_entry2 = Entry(self.window, textvariable=self.amplituda2, font=('calibre', 10, 'normal'))
-        self.amplituda_entry2.grid(column=1, row=9)
+        signal_selector = QComboBox()
+        signal_selector.addItems(self.types_of_signal)
+        col_layout.addWidget(signal_selector)
 
-        self.duration_label2 = Label(self.window, text="Czas trwania:")
-        self.duration_label2.grid(column=0, row=10)
-        self.duration_entry2 = Entry(self.window, textvariable=self.duration2, font=('calibre', 10, 'normal'))
-        self.duration_entry2.grid(column=1, row=10)
+        amplitude_input = self.create_input_field("Amplituda:", col_layout)
+        duration_input = self.create_input_field("Czas trwania:", col_layout)
+        t1_input = self.create_input_field("Czas 1:", col_layout)
+        t2_input = self.create_input_field("Czas 2:", col_layout)
+        sampling_input = self.create_input_field("Próbkowanie:", col_layout)
 
-        self.time1_label2 = Label(self.window, text="Czas 1:")
-        self.time1_label2.grid(column=0, row=11)
-        self.t1_entry2 = Entry(self.window, textvariable=self.t12, font=('calibre', 10, 'normal'))
-        self.t1_entry2.grid(column=1, row=11)
+        plot_button = QPushButton("Create")
+        plot_button.clicked.connect(plot_method)
+        col_layout.addWidget(plot_button)
 
-        self.time2_label2 = Label(self.window, text="Czas 2:")
-        self.time2_label2.grid(column=0, row=12)
-        self.t2_entry2 = Entry(self.window, textvariable=self.t22, font=('calibre', 10, 'normal'))
-        self.t2_entry2.grid(column=1, row=12)
+        return col_layout
 
-        self.sampling_label2 = Label(self.window, text="Probkowanie:")
-        self.sampling_label2.grid(column=0, row=13)
-        self.sampling_entry2 = Entry(self.window, textvariable=self.sampling2, font=('calibre', 10, 'normal'))
-        self.sampling_entry2.grid(column=1, row=13)
+    def create_input_field(self, label_text, layout):
+        label = QLabel(label_text)
+        layout.addWidget(label)
+        line_edit = QLineEdit()
+        layout.addWidget(line_edit)
+        return line_edit
 
+    def plot_signal(self):
+        self.plot(self.signal_col, self.canvas)
 
-        plot_button = Button(master=self.window,
-                             command=self.plot,
-                             height=2,
-                             width=10,
-                             text="Create")
-
-        plot_button.grid(column=0, row=14)
-        width = self.window.winfo_screenwidth()
-        height = self.window.winfo_screenheight()
-        self.window.geometry("%dx%d" % (width, height))
-        self.window.mainloop()
-
-    def plot(self):
-        selected_signal = self.choose_type.get()
+    def plot(self, col_layout, canvas):
+        signal_selector = col_layout.itemAt(1).widget()
+        selected_signal = signal_selector.currentText()
         signal_function = self.signal_functions.get(selected_signal)
         if signal_function:
             sig, time = signal_function()
-            canvas = FigureCanvasTkAgg(plot_signal(sig, time), master=self.window)
+            fig = plot_signal(sig, time)
+            canvas.figure.clear()
+            ax1 = canvas.figure.add_subplot(121)
+            ax2 = canvas.figure.add_subplot(122)
+            ax1.plot(time, sig)
+            ax1.set_xlabel("Time [s]")
+            ax1.set_ylabel("Amplitude")
+            ax1.set_title("Signal")
+            ax1.grid()
+            ax2.hist(sig, bins=20)
+            ax2.set_title("Histogram")
+            ax2.set_xlabel("Amplitude")
+            ax2.set_ylabel("Frequency")
+            fig.tight_layout()
             canvas.draw()
-            canvas.get_tk_widget().grid(column=3, row=0, rowspan=7)
-
-
-
-
-
-
-
-
-
