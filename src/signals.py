@@ -1,5 +1,5 @@
 import numpy as np
-from plots import plot_signal
+from plots import plot_signal, plot_points
 
 
 def uniformly_distributed_noise(A=1, t_start=0, d=2, sampling_rate=1000):
@@ -81,39 +81,78 @@ def square_signal(A=1, T=1, kw=0.5, t_start=0, d=2, sampling_rate=1000):
         
         start_low_idx = end_idx
         end_low_idx = min(start_low_idx + (cycles - high_cycles), len(time))
+        signal[start_low_idx:end_low_idx] = 0
+    
+    plot_signal(signal, time)
+
+    return signal, time
+
+def square_symmetric_signal(A=1, T=1, kw=0.5, t_start=0, d=2, sampling_rate=1000):
+    # S7
+    # TODO: Check if this is correct
+    t_end = t_start + d
+
+    time = np.linspace(0, t_end, int(d * sampling_rate))
+
+    signal = np.zeros_like(time)
+    cycles = int(T * sampling_rate)
+    high_cycles = int(cycles * kw)
+
+    for k in range(int(len(time) / cycles) + 1):
+        start_idx = int(k * cycles)
+        end_idx = min(start_idx + high_cycles, len(time))
+        signal[start_idx:end_idx] = A
+        
+        start_low_idx = end_idx
+        end_low_idx = min(start_low_idx + (cycles - high_cycles), len(time))
         signal[start_low_idx:end_low_idx] = -A
     
     plot_signal(signal, time)
 
     return signal, time
 
-def square_symmetric_signal():
-    # S7
-    pass
-
 def triangle_signal():
     # S8
     pass
 
 def step_signal(A=1, t_start=0, d=2, sampling_rate=1000):
- # Czas trwania sygnału w sekundach
+    # S9
+    # Czas trwania sygnału w sekundach
     t_end = t_start + d
     t_step = t_end / 2
 
     time = np.linspace(0, t_end, int(d * sampling_rate))
     signal = np.piecewise(time, [time < t_step, time >= t_step], [0, A])
     
+    
     plot_signal(signal, time)
 
     return signal, time
 
-def unit_impulse():
+def unit_impulse(A=1, n_start=0, n_spike = 10, sampling_rate=10, d=2):
     # S10
-    pass
+    time = np.linspace(0, d, int(d * sampling_rate))
+    signal = np.zeros_like(time)
+    if n_spike < len(signal):
+        signal[n_spike] = A
+    else:
+        signal[-1] = A
 
-def impulse_noise():
+    plot_points(signal, time)
+    
+    return signal, time
+
+def impulse_noise(A=1, t_start=0, d=2, sampling_rate=30, p=0.5):
     # S11
-    pass
+    # TODO: Check if this is correct
+    t_end = t_start + d
+
+    time = np.linspace(0, t_end, int(d * sampling_rate))
+    signal = np.random.choice([0, A], len(time), p=[1-p, p])
+    
+    plot_points(signal, time)
+    
+    return signal, time
 
 if __name__ == "__main__":
     # uniformly_distributed_noise()
@@ -122,7 +161,7 @@ if __name__ == "__main__":
     # sin_half_signal()
     # sin_twohalf_signal()
     square_signal()
-    # square_symmetric_signal()
+    square_symmetric_signal()
     # triangle_signal()
     # step_signal()
     # unit_impulse()
