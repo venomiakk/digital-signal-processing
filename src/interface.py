@@ -6,18 +6,33 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from plots import plot_signal
 from signals import *
+from enum import auto, Flag, Enum
 
 
 class Interface:
 
     def __init__(self):
-
         self.types_of_signal=("szum o rozkładzie jednostajnym", "szum gaussowski", "sygnał sinusoidalny",
                      "sygnał sinusoidalny wyprostowany jednopołówkowo",
                      "sygnał sinusoidalnym wyprostowany dwupołówkowo",
                      "sygnał prostokątny", "sygnał prostokątny symetryczny",
                      "sygnał trójkątny", "skok jednostkowy", "impuls jednostkowy",
                      "szum impulsowy")
+
+        self.signal_functions = {
+            "szum o rozkładzie jednostajnym": uniformly_distributed_noise,
+            "szum gaussowski": gaussian_noise,
+            "sygnał sinusoidalny": sin_signal,
+            "sygnał sinusoidalny wyprostowany jednopołówkowo": sin_half_signal,
+            "sygnał sinusoidalnym wyprostowany dwupołówkowo": sin_twohalf_signal,
+            "sygnał prostokątny": square_signal,
+            "sygnał prostokątny symetryczny": square_symmetric_signal,
+            "sygnał trójkątny": triangle_signal,
+            "skok jednostkowy": step_signal,
+            "impuls jednostkowy": unit_impulse,
+            "szum impulsowy": impulse_noise
+        }
+
         self.window = Tk()
 
         self.amplituda = DoubleVar()
@@ -39,7 +54,6 @@ class Interface:
         self.choose_type['values'] = self.types_of_signal
         self.choose_type.current(1)
         self.choose_type.grid(column=1, row=0)
-
         self.parameters_text = Label(self.window, text="Parametry sygnału 1")
         self.parameters_text.grid(column=0, row=1)
 
@@ -115,32 +129,17 @@ class Interface:
         plot_button.grid(column=0, row=14)
         width = self.window.winfo_screenwidth()
         height = self.window.winfo_screenheight()
-        # setting tkinter window size
         self.window.geometry("%dx%d" % (width, height))
         self.window.mainloop()
 
     def plot(self):
-        # the figure that will contain the plot
-        fig = Figure(figsize=(5, 5),
-                     dpi=100)
-        # list of squares
-        y = [i ** 2 for i in range(101)]
-        # adding the subplot
-        plot1 = fig.add_subplot(111)
-        # plotting the graph
-        plot1.plot(uniformly_distributed_noise())
-        # creating the Tkinter canvas
-        # containing the Matplotlib figure
-        canvas = FigureCanvasTkAgg(fig,
-                                   master=self.window)
-        canvas.draw()
-        # placing the canvas on the Tkinter window
-        canvas.get_tk_widget().grid(column=3, row=0, rowspan=7)
-        # placing the toolbar on the Tkinter window
-        canvas.get_tk_widget().grid(column=5, row=1)
-
-        # the main Tkinter window
-
+        selected_signal = self.choose_type.get()
+        signal_function = self.signal_functions.get(selected_signal)
+        if signal_function:
+            sig, time = signal_function()
+            canvas = FigureCanvasTkAgg(plot_signal(sig, time), master=self.window)
+            canvas.draw()
+            canvas.get_tk_widget().grid(column=3, row=0, rowspan=7)
 
 
 
