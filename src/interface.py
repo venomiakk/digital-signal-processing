@@ -1,13 +1,17 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QComboBox, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QTabWidget
+from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QComboBox, QVBoxLayout, 
+                          QHBoxLayout, QPushButton, QLineEdit, QTabWidget, 
+                          QFormLayout, QSizePolicy, QFileDialog, QMessageBox)
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from signals import *
 from plots import plot_signal
+from filesRW import FileRW
 
 
 class SignalProcessingApp(QWidget):
     def __init__(self):
         super().__init__()
+        self.current_signal = None
         self.initUI()
 
     def initUI(self):
@@ -76,19 +80,131 @@ class SignalProcessingApp(QWidget):
 
         signal_selector = QComboBox()
         signal_selector.addItems(self.types_of_signal)
+        # Set maximum visible items to show all signals without scrolling
+        signal_selector.setMaxVisibleItems(len(self.types_of_signal))
+        # Connect the signal selector to update input fields
+        signal_selector.currentTextChanged.connect(self.update_input_fields)
         col_layout.addWidget(signal_selector)
 
-        amplitude_input = self.create_input_field("Amplituda:", col_layout)
-        duration_input = self.create_input_field("Czas trwania:", col_layout)
-        t1_input = self.create_input_field("Czas 1:", col_layout)
-        t2_input = self.create_input_field("Czas 2:", col_layout)
-        sampling_input = self.create_input_field("Próbkowanie:", col_layout)
+        # Create form layout for parameters
+        form_layout = QFormLayout()
+        form_layout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
+        
+        amplitude_input = QLineEdit()
+        amplitude_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        form_layout.addRow("Amplituda:", amplitude_input)
+        
+        duration_input = QLineEdit()
+        duration_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        form_layout.addRow("Czas trwania [s]:", duration_input)
+        
+        t_start_input = QLineEdit()
+        t_start_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        form_layout.addRow("Przesunięcie [s]:", t_start_input)
+        
+        sampling_input = QLineEdit()
+        sampling_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        form_layout.addRow("Próbkowanie [próbki/s]:", sampling_input)
+        
+        period_input = QLineEdit()
+        period_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        form_layout.addRow("Okres [s]:", period_input)
 
-        plot_button = QPushButton("Create")
+        kw_input = QLineEdit()
+        kw_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        form_layout.addRow("Współczynnik wypełnienia:", kw_input)
+
+        sample_number_input = QLineEdit()
+        sample_number_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        form_layout.addRow("Numer próbki:", sample_number_input)
+
+        probability_input = QLineEdit()
+        probability_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        form_layout.addRow("Prawdopodobieństwo:", probability_input)
+
+        col_layout.addLayout(form_layout)
+
+        # Create a horizontal layout for the plot button and bins input
+        button_row = QHBoxLayout()
+        
+        # Add plot button to the horizontal layout
+        plot_button = QPushButton("Wygeneruj sygnał")
+        plot_button.setFixedWidth(100)
         plot_button.clicked.connect(plot_method)
-        col_layout.addWidget(plot_button)
+        button_row.addWidget(plot_button)
 
+        # Add save button
+        save_button = QPushButton("Zapisz sygnał")
+        save_button.setFixedWidth(100)
+        save_button.clicked.connect(self.save_signal)
+        button_row.addWidget(save_button)
+            
+        # Add spacing between elements
+        button_row.addSpacing(10)
+        
+        # Add bin number label and input to the horizontal layout
+        button_row.addStretch(1)
+        button_row.addWidget(QLabel("Liczba przedziałów histogramu:"))
+        
+        bin_input = QLineEdit()
+        bin_input.setText("20")  # Default value
+        bin_input.setFixedWidth(80)  # Make it reasonably sized
+        button_row.addWidget(bin_input)
+        
+        # Add the horizontal layout to the main column layout
+        col_layout.addLayout(button_row)
+        
+        # Store references to all inputs
+        self.parameter_inputs = {
+            'amplitude': amplitude_input,
+            'duration': duration_input,
+            't1': t_start_input,
+            'sampling': sampling_input,
+            'period': period_input,
+            'kw': kw_input,
+            'sample_number': sample_number_input,
+            'probability': probability_input,
+            'bins': bin_input  # Add the new input to parameter dictionary
+        }
+
+        # Save reference to the signal selector
+        self.signal_selector = signal_selector
+        
+        # Set initial state of input fields
+        self.update_input_fields(signal_selector.currentText())
+        
         return col_layout
+
+    def update_input_fields(self, signal_type):
+        # Define which parameters are needed for each signal type
+        param_mapping = {
+            "szum o rozkładzie jednostajnym": ['amplitude', 'duration', 'sampling'],
+            "szum gaussowski": ['amplitude', 'duration', 'sampling'],
+            "sygnał sinusoidalny": ['amplitude', 'duration', 't1', 'sampling', 'period'],
+            "sygnał sinusoidalny wyprostowany jednopołówkowo": ['amplitude', 'duration', 't1', 'sampling', 'period'],
+            "sygnał sinusoidalnym wyprostowany dwupołówkowo": ['amplitude', 'duration', 't1', 'sampling', 'period'],
+            "sygnał prostokątny": ['amplitude', 'duration', 't1', 'sampling', 'period', 'kw'],
+            "sygnał prostokątny symetryczny": ['amplitude', 'duration', 't1', 'sampling', 'period', 'kw'],
+            "sygnał trójkątny": ['amplitude', 'duration', 't1', 'sampling', 'period', 'kw'],
+            "skok jednostkowy": ['amplitude', 'duration', 't1', 'sampling'],
+            "impuls jednostkowy": ['amplitude', 'duration', 'sampling', 'sample_number'],
+            "szum impulsowy": ['amplitude', 'duration', 'sampling', 'probability']
+        }
+        
+        # Get the parameters needed for the selected signal type
+        needed_params = param_mapping.get(signal_type, [])
+        
+        # Enable/disable input fields based on the needed parameters
+        for param_name, input_field in self.parameter_inputs.items():
+            
+            if param_name == 'bins':
+                continue
+
+            if param_name in needed_params:
+                input_field.setEnabled(True)
+            else:
+                input_field.setEnabled(False)
+                input_field.clear()  # Clear the disabled fields
 
     def create_input_field(self, label_text, layout):
         label = QLabel(label_text)
@@ -96,6 +212,48 @@ class SignalProcessingApp(QWidget):
         line_edit = QLineEdit()
         layout.addWidget(line_edit)
         return line_edit
+    
+    def save_signal(self):
+        if not hasattr(self, 'current_signal') or self.current_signal is None:
+            # Show warning dialog instead of printing to console
+            QMessageBox.warning(
+                self,
+                "Brak sygnału do zapisania",
+                "Nie wygenerowano jeszcze żadnego sygnału do zapisania.",
+                QMessageBox.Ok
+            )
+            return
+        
+        # Open file dialog to select save location
+        options = QFileDialog.Options()
+        filename, _ = QFileDialog.getSaveFileName(
+            self, 
+            "Zapisz sygnał", 
+            "", 
+            "Signal Files (*.pkl);;All Files (*)", 
+            options=options
+        )
+        
+        if filename:
+            # Add .pkl extension if not provided
+            if not filename.endswith('.pkl'):
+                filename += '.pkl'
+            
+            # Save the signal using FileRW
+            if FileRW.write_signal_to_file(self.current_signal, filename):
+                QMessageBox.information(
+                    self,
+                    "Sygnał zapisany",
+                    f"Sygnał został zapisany w: {filename}",
+                    QMessageBox.Ok
+                )
+            else:
+                QMessageBox.critical(
+                    self,
+                    "Błąd zapisu sygnału",
+                    "Wystąpił błąd podczas zapisu sygnału.",
+                    QMessageBox.Ok
+                )
 
     def plot_signal(self):
         self.plot(self.signal_col, self.canvas)
@@ -105,24 +263,45 @@ class SignalProcessingApp(QWidget):
         selected_signal = signal_selector.currentText()
         signal_function = self.signal_functions.get(selected_signal)
         if signal_function:
-            sigObj = signal_function()
+            # Collect and convert parameters from input fields
+            params = {}
+            
+            # Map UI parameter names to function parameter names
+            param_mapping = {
+                'amplitude': 'A',
+                'duration': 'd',
+                't1': 't_start',
+                'period': 'T',
+                'sampling': 'sampling_rate',
+                'kw': 'kw',
+                'sample_number': 'n_spike',
+                'probability': 'p'
+            }
+            
+            # Get values from enabled input fields
+            for ui_param, func_param in param_mapping.items():
+                input_field = self.parameter_inputs.get(ui_param)
+                if input_field and input_field.isEnabled() and input_field.text():
+                    try:
+                        params[func_param] = float(input_field.text())
+                    except ValueError:
+                        # Use default if conversion fails
+                        pass
+            
+            # Call the signal function with parameters
+            sigObj = signal_function(**params)
             sig, time = sigObj.signal, sigObj.time
+            self.current_signal = sigObj
+
+            try:
+                num_bins = int(self.parameter_inputs['bins'].text())
+            except (ValueError, TypeError):
+                num_bins = 20  # Default if invalid input
+            
             if sigObj.discrete_signal:
-                fig = plot_points(sig, time)
+                fig = plot_points(sig, time, bins_no=num_bins)
             else:
-                fig = plot_signal(sig, time)
+                fig = plot_signal(sig, time, bins_no=num_bins)
             canvas.figure.clear()
             canvas.figure = fig
-            # ax1 = canvas.figure.add_subplot(121)
-            # ax2 = canvas.figure.add_subplot(122)
-            # ax1.plot(time, sig)
-            # ax1.set_xlabel("Time [s]")
-            # ax1.set_ylabel("Amplitude")
-            # ax1.set_title("Signal")
-            # ax1.grid()
-            # ax2.hist(sig, bins=20)
-            # ax2.set_title("Histogram")
-            # ax2.set_xlabel("Amplitude")
-            # ax2.set_ylabel("Frequency")
-            # fig.tight_layout()
             canvas.draw()

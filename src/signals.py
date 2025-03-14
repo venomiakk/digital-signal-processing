@@ -7,6 +7,7 @@ class SignalObject:
         self.signal = signal
         self.time = time
 
+        # TODO: different calculations for periodic signals?
         self.mean_value = np.mean(signal)
         self.abs_mean_value = np.mean(np.abs(signal))
         self.rms_value = np.sqrt(np.mean(np.square(signal)))
@@ -202,6 +203,44 @@ class SignalGenerator:
         sigObj = SignalObject(signal, time, sampling_rate, A=A, t_start=t_start, d=d, p=p, discrete_signal=True)
         return sigObj
 
+class SignalOperations:
+    @staticmethod
+    def add_signals(signal1, signal2):
+        new_signal = signal1.signal + signal2.signal
+        new_time = signal1.time
+        plot_signal(new_signal, new_time)
+        new_sampling_rate = signal1.sampling_rate
+
+        return SignalObject(new_signal, new_time, sampling_rate=new_sampling_rate)
+
+    @staticmethod
+    def subtract_signals(signal1, signal2):
+        new_signal = signal1.signal - signal2.signal
+        new_time = signal1.time
+        plot_signal(new_signal, new_time)
+        new_sampling_rate = signal1.sampling_rate
+
+        return SignalObject(new_signal, new_time, sampling_rate=new_sampling_rate)
+
+    @staticmethod
+    def multiply_signals(signal1, signal2):
+        new_signal = signal1.signal * signal2.signal
+        new_time = signal1.time
+        plot_signal(new_signal, new_time)
+        new_sampling_rate = signal1.sampling_rate
+
+        return SignalObject(new_signal, new_time, sampling_rate=new_sampling_rate)
+
+    @staticmethod
+    def divide_signals(signal1, signal2):
+        epsilon = 1e-10
+        new_signal = signal1.signal / (signal2.signal + epsilon)
+        new_time = signal1.time
+        plot_signal(new_signal, new_time)
+        new_sampling_rate = signal1.sampling_rate
+
+        return SignalObject(new_signal, new_time, sampling_rate=new_sampling_rate)
+
 if __name__ == "__main__":
     # SignalGenerator.uniformly_distributed_noise()
     # gaussian_noise()
@@ -213,4 +252,7 @@ if __name__ == "__main__":
     # triangle_signal()
     # step_signal()
     # unit_impulse()
-    SignalGenerator.impulse_noise()
+    # SignalGenerator.impulse_noise()
+    s1 = SignalGenerator.sin_signal()
+    s2 = SignalGenerator.square_signal()
+    SignalOperations.divide_signals(s1, s2)

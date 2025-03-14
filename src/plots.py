@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
 
-def plot_signal(signal, time):
+def plot_signal(signal, time, bins_no=20):
     fig, (plot1, plot2) = plt.subplots(1, 2, figsize=(10, 3))
 
     plot1.grid()
@@ -12,7 +12,7 @@ def plot_signal(signal, time):
     plot1.set_ylabel("Amplituda")
     plot1.set_title("Sygnał")
     
-    plot2.hist(signal, bins=20)
+    plot2.hist(signal, bins=bins_no)
     plot2.set_title("Histogram")
     plot2.set_xlabel("Amplituda")
     plot2.set_ylabel("Częstość")
@@ -22,7 +22,7 @@ def plot_signal(signal, time):
     return fig
 
 
-def plot_points(signal, time):
+def plot_points(signal, time, bins_no=20):
     fig, (plot1, plot2) = plt.subplots(1, 2, figsize=(10, 3))
 
     plot1.grid()
@@ -32,7 +32,7 @@ def plot_points(signal, time):
     plot1.set_ylabel("Amplitude")
     plot1.set_title("Signal")
 
-    plot2.hist(signal, bins=20)
+    plot2.hist(signal, bins=bins_no)
     plot2.set_title("Histogram")
     plot2.set_xlabel("Amplitude")
     plot2.set_ylabel("Frequency")
