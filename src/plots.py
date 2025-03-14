@@ -19,6 +19,7 @@ def plot_signal(signal, time, bins_no=20):
 
     fig.tight_layout()
     # plt.show()
+    plt.close()
     return fig
 
 
@@ -39,4 +40,5 @@ def plot_points(signal, time, bins_no=20):
 
     fig.tight_layout()
     # plt.show()
+    plt.close()
     return fig

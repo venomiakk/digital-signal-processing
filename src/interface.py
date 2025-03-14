@@ -62,7 +62,7 @@ class SignalProcessingApp(QWidget):
         layout = QVBoxLayout()
         signal_tab.setLayout(layout)
 
-        self.signal_col = self.create_signal_column("Parametry sygnału", self.plot_signal)
+        self.signal_col = self.create_signal_column("Parametry sygnału", self.plot_signal, self.load_signal_for_tab)
 
         layout.addLayout(self.signal_col)
 
@@ -79,8 +79,8 @@ class SignalProcessingApp(QWidget):
         # Create horizontal layout for signal selectors and operation selector
         signals_layout = QHBoxLayout()
         
-        # Create first signal column with specific plot method
-        self.signal1_col = self.create_signal_column("Sygnał 1", self.plot_signal1)
+        # Create first signal column with specific plot and load methods
+        self.signal1_col = self.create_signal_column("Sygnał 1", self.plot_signal1, self.load_signal1)
         signals_layout.addLayout(self.signal1_col)
         
         # Create operation selector in the middle
@@ -106,8 +106,8 @@ class SignalProcessingApp(QWidget):
         op_layout.addStretch(1)
         signals_layout.addLayout(op_layout)
         
-        # Create second signal column with specific plot method
-        self.signal2_col = self.create_signal_column("Sygnał 2", self.plot_signal2)
+        # Create second signal column with specific plot and load methods
+        self.signal2_col = self.create_signal_column("Sygnał 2", self.plot_signal2, self.load_signal2)
         signals_layout.addLayout(self.signal2_col)
         
         # Add the signals layout to the main layout
@@ -142,15 +142,21 @@ class SignalProcessingApp(QWidget):
         self.tab_widget.addTab(operations_tab, "Operacje")
         
     def execute_operation(self):
-        # Generate both signals based on UI parameters
-        signal1 = self.generate_signal_from_column(self.signal1_col)
-        signal2 = self.generate_signal_from_column(self.signal2_col)
+        # Check if signals are available (either generated or loaded)
+        signal1 = getattr(self, 'signal1', None)
+        signal2 = getattr(self, 'signal2', None)
+        
+        # If signals aren't loaded, try to generate them from UI
+        if not signal1:
+            signal1 = self.generate_signal_from_column(self.signal1_col)
+        if not signal2:
+            signal2 = self.generate_signal_from_column(self.signal2_col)
         
         if not signal1 or not signal2:
             QMessageBox.warning(
                 self,
                 "Brak sygnału",
-                "Proszę upewnić się, że oba sygnały są poprawnie skonfigurowane.",
+                "Proszę upewnić się, że oba sygnały są dostępne (wygenerowane lub wczytane z pliku).",
                 QMessageBox.Ok
             )
             return
@@ -277,7 +283,7 @@ class SignalProcessingApp(QWidget):
                     QMessageBox.Ok
                 )
 
-    def create_signal_column(self, title, plot_method):
+    def create_signal_column(self, title, plot_method, load_method=None):
         col_layout = QVBoxLayout()
         # col_layout.setSpacing(0)
         # label = QLabel(title)
@@ -329,7 +335,7 @@ class SignalProcessingApp(QWidget):
 
         col_layout.addLayout(form_layout)
 
-        # Create a horizontal layout for the plot button and bins input
+        # Create a horizontal layout for buttons
         button_row = QHBoxLayout()
         
         # Add plot button to the horizontal layout
@@ -343,6 +349,13 @@ class SignalProcessingApp(QWidget):
         save_button.setFixedWidth(100)
         save_button.clicked.connect(self.save_signal)
         button_row.addWidget(save_button)
+        
+        # Add load from file button
+        load_button = QPushButton("Wczytaj z pliku")
+        load_button.setFixedWidth(100)
+        if load_method:
+            load_button.clicked.connect(load_method)
+        button_row.addWidget(load_button)
             
         # Add spacing between elements
         button_row.addSpacing(10)
@@ -744,3 +757,103 @@ class SignalProcessingApp(QWidget):
         
         self.file_canvas.figure = fig
         self.file_canvas.draw()
+
+    def load_signal_for_tab(self):
+        """Load a signal from file for the signal tab"""
+        # Open file dialog to select file
+        options = QFileDialog.Options()
+        filename, _ = QFileDialog.getOpenFileName(
+            self, 
+            "Wczytaj sygnał", 
+            "", 
+            "Signal Files (*.pkl);;All Files (*)", 
+            options=options
+        )
+        
+        if filename:
+            # Load signal from file
+            signal_obj = FileRW.read_signal_from_file(filename)
+            
+            if signal_obj:
+                # Store the loaded signal
+                self.current_signal = signal_obj
+                
+                # Show notification
+                QMessageBox.information(
+                    self,
+                    "Sygnał wczytany",
+                    f"Wczytano sygnał z pliku: {filename}",
+                    QMessageBox.Ok
+                )
+                
+                # Plot the signal
+                self.plot_on_canvas(signal_obj, self.canvas)
+            else:
+                QMessageBox.critical(
+                    self,
+                    "Błąd odczytu",
+                    f"Nie udało się wczytać sygnału z pliku: {filename}",
+                    QMessageBox.Ok
+                )
+
+    def load_signal1(self):
+        """Load signal 1 from file for the operations tab"""
+        options = QFileDialog.Options()
+        filename, _ = QFileDialog.getOpenFileName(
+            self, 
+            "Wczytaj sygnał 1", 
+            "", 
+            "Signal Files (*.pkl);;All Files (*)", 
+            options=options
+        )
+        
+        if filename:
+            signal_obj = FileRW.read_signal_from_file(filename)
+            
+            if signal_obj:
+                self.signal1 = signal_obj  # Store for operations
+                self.plot_on_canvas(signal_obj, self.canvas_signal1)
+                QMessageBox.information(
+                    self,
+                    "Sygnał wczytany",
+                    f"Wczytano sygnał 1 z pliku: {filename}",
+                    QMessageBox.Ok
+                )
+            else:
+                QMessageBox.critical(
+                    self,
+                    "Błąd odczytu",
+                    f"Nie udało się wczytać sygnału z pliku: {filename}",
+                    QMessageBox.Ok
+                )
+
+    def load_signal2(self):
+        """Load signal 2 from file for the operations tab"""
+        options = QFileDialog.Options()
+        filename, _ = QFileDialog.getOpenFileName(
+            self, 
+            "Wczytaj sygnał 2", 
+            "", 
+            "Signal Files (*.pkl);;All Files (*)", 
+            options=options
+        )
+        
+        if filename:
+            signal_obj = FileRW.read_signal_from_file(filename)
+            
+            if signal_obj:
+                self.signal2 = signal_obj  # Store for operations
+                self.plot_on_canvas(signal_obj, self.canvas_signal2)
+                QMessageBox.information(
+                    self,
+                    "Sygnał wczytany",
+                    f"Wczytano sygnał 2 z pliku: {filename}",
+                    QMessageBox.Ok
+                )
+            else:
+                QMessageBox.critical(
+                    self,
+                    "Błąd odczytu",
+                    f"Nie udało się wczytać sygnału z pliku: {filename}",
+                    QMessageBox.Ok
+                )
