@@ -13,7 +13,7 @@ from filesRW import FileRW
 # TODO: 
 #* w operations_tab.py:
 #* - przesunięcie, czas trwania, próbkowanie powinny być ustalane dla obu sygnałów jednocześnie
-#* odczytywanie sygnałów z pliku w signal_tab.py i operations_tab.py
+#* wypisywanie "statystyk" (rms, avg itd) sygnału np. pod wykresem
 
 
 
