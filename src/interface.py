@@ -21,17 +21,17 @@ class SignalProcessingApp(QWidget):
         ]
 
         self.signal_functions = {
-            "szum o rozkładzie jednostajnym": uniformly_distributed_noise,
-            "szum gaussowski": gaussian_noise,
-            "sygnał sinusoidalny": sin_signal,
-            "sygnał sinusoidalny wyprostowany jednopołówkowo": sin_half_signal,
-            "sygnał sinusoidalnym wyprostowany dwupołówkowo": sin_twohalf_signal,
-            "sygnał prostokątny": square_signal,
-            "sygnał prostokątny symetryczny": square_symmetric_signal,
-            "sygnał trójkątny": triangle_signal,
-            "skok jednostkowy": step_signal,
-            "impuls jednostkowy": unit_impulse,
-            "szum impulsowy": impulse_noise
+            "szum o rozkładzie jednostajnym": SignalGenerator.uniformly_distributed_noise,
+            "szum gaussowski": SignalGenerator.gaussian_noise,
+            "sygnał sinusoidalny": SignalGenerator.sin_signal,
+            "sygnał sinusoidalny wyprostowany jednopołówkowo": SignalGenerator.sin_half_signal,
+            "sygnał sinusoidalnym wyprostowany dwupołówkowo": SignalGenerator.sin_twohalf_signal,
+            "sygnał prostokątny": SignalGenerator.square_signal,
+            "sygnał prostokątny symetryczny": SignalGenerator.square_symmetric_signal,
+            "sygnał trójkątny": SignalGenerator.triangle_signal,
+            "skok jednostkowy": SignalGenerator.step_signal,
+            "impuls jednostkowy": SignalGenerator.unit_impulse,
+            "szum impulsowy": SignalGenerator.impulse_noise
         }
 
         self.tab_widget = QTabWidget()
@@ -105,19 +105,24 @@ class SignalProcessingApp(QWidget):
         selected_signal = signal_selector.currentText()
         signal_function = self.signal_functions.get(selected_signal)
         if signal_function:
-            sig, time = signal_function()
-            fig = plot_signal(sig, time)
+            sigObj = signal_function()
+            sig, time = sigObj.signal, sigObj.time
+            if sigObj.discrete_signal:
+                fig = plot_points(sig, time)
+            else:
+                fig = plot_signal(sig, time)
             canvas.figure.clear()
-            ax1 = canvas.figure.add_subplot(121)
-            ax2 = canvas.figure.add_subplot(122)
-            ax1.plot(time, sig)
-            ax1.set_xlabel("Time [s]")
-            ax1.set_ylabel("Amplitude")
-            ax1.set_title("Signal")
-            ax1.grid()
-            ax2.hist(sig, bins=20)
-            ax2.set_title("Histogram")
-            ax2.set_xlabel("Amplitude")
-            ax2.set_ylabel("Frequency")
-            fig.tight_layout()
+            canvas.figure = fig
+            # ax1 = canvas.figure.add_subplot(121)
+            # ax2 = canvas.figure.add_subplot(122)
+            # ax1.plot(time, sig)
+            # ax1.set_xlabel("Time [s]")
+            # ax1.set_ylabel("Amplitude")
+            # ax1.set_title("Signal")
+            # ax1.grid()
+            # ax2.hist(sig, bins=20)
+            # ax2.set_title("Histogram")
+            # ax2.set_xlabel("Amplitude")
+            # ax2.set_ylabel("Frequency")
+            # fig.tight_layout()
             canvas.draw()

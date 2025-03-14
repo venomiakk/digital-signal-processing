@@ -2,9 +2,17 @@ import numpy as np
 from plots import plot_signal, plot_points
 
 class SignalObject:
-    def __init__(self, signal, time, sampling_rate=None, A=None, T=None, t_start=None, d=None, kw=None, n_start=None, n_spike=None, p=None):
+    def __init__(self, signal, time, sampling_rate=None, A=None, T=None, t_start=None, d=None, kw=None,
+                  n_start=None, n_spike=None, p=None, discrete_signal=False):
         self.signal = signal
         self.time = time
+
+        self.mean_value = np.mean(signal)
+        self.abs_mean_value = np.mean(np.abs(signal))
+        self.rms_value = np.sqrt(np.mean(np.square(signal)))
+        self.variance = np.var(signal)
+        self.avg_power = np.mean(np.square(signal))
+
         self.sampling_rate = sampling_rate
         self.A = A
         self.T = T
@@ -15,175 +23,194 @@ class SignalObject:
         self.n_spike = n_spike
         self.p = p
 
+        self.discrete_signal = discrete_signal
 
-def uniformly_distributed_noise(A=1, t_start=0, d=2, sampling_rate=1000):
-    # S1
-    t_end = t_start + d
+class SignalGenerator:
+    @staticmethod
+    def uniformly_distributed_noise(A=1, t_start=0, d=2, sampling_rate=1000):
+        # S1
+        t_end = t_start + d
 
-    time = np.linspace(0, t_end, int(d * sampling_rate))
-    signal = np.random.uniform(-A, A, len(time))
-    
-    plot_signal(signal, time)
-
-    return signal, time
-
-def gaussian_noise(A=1, t_start=0, d=2, sampling_rate=1000):
-    # S2
-    t_end = t_start + d
-
-    time = np.linspace(0, t_end, int(d * sampling_rate))
-    signal = A * np.random.normal(0, 1, len(time))
-    
-    plot_signal(signal, time)
-
-    return signal, time
-
-def sin_signal(A=1, T=1, t_start=0, d=2, sampling_rate=1000):
-    # TODO: Check if this is correct
-    # S3
-    t_end = t_start + d
-
-    time = np.linspace(0, t_end, int(d * sampling_rate))
-    signal = A * np.sin(2 * np.pi * (time - t_start) / T)
-
-    plot_signal(signal, time)
-
-    return signal, time
-
-def sin_half_signal(A=1, T=1, t_start=0, d=2, sampling_rate=1000):
-    # S4
-
-    t_end = t_start + d
-
-    time = np.linspace(0, t_end, int(d * sampling_rate))
-    signal = 0.5 * A * ((np.sin(2 * np.pi * (time - t_start) / T)) + np.abs(np.sin(2 * np.pi * (time - t_start) / T)))
-
-    plot_signal(signal, time)
-
-    return signal, time
-
-def sin_twohalf_signal(A=1, T=1, t_start=0, d=2, sampling_rate=1000):
-    # S5
-    t_end = t_start + d
-
-    time = np.linspace(0, t_end, int(d * sampling_rate))
-    signal = A * np.abs(np.sin(2 * np.pi * (time - t_start) / T))
-
-    plot_signal(signal, time)
-
-    return signal, time
-
-def square_signal(A=1, T=1, kw=0.5, t_start=0, d=2, sampling_rate=1000):
-    # TODO: Check if this is correct
-    # S6
-
-    t_end = t_start + d
-
-    time = np.linspace(0, t_end, int(d * sampling_rate))
-    signal = np.zeros_like(time)
-
-    for i, t in enumerate(time):
-        k = np.floor(t / T)  # Numer okresu
-        t_mod = t - k * T  # Czas w bieżącym okresie
+        time = np.linspace(0, t_end, int(d * sampling_rate))
+        signal = np.random.uniform(-A, A, len(time))
         
-        if t_start <= t_mod < kw * T + t_start:
-            signal[i] = A
-        elif kw * T + t_start <= t_mod < T + t_start:
-            signal[i] = 0
-    
-    plot_signal(signal, time)
+        plot_signal(signal, time)
+        sigObj = SignalObject(signal, time, sampling_rate, A=A, t_start=t_start, d=d)
+        print(sigObj.mean_value)
+        print(sigObj.abs_mean_value)
+        print(sigObj.rms_value)
+        print(sigObj.variance)
+        print(sigObj.avg_power)
 
-    return signal, time
+        return sigObj
 
-def square_symmetric_signal(A=1, T=1, kw=0.5, t_start=0, d=2, sampling_rate=1000):
-    # S7
-    # TODO: Check if this is correct
-    t_end = t_start + d
+    @staticmethod
+    def gaussian_noise(A=1, t_start=0, d=2, sampling_rate=1000):
+        # S2
+        t_end = t_start + d
 
-    time = np.linspace(0, t_end, int(d * sampling_rate))
-    signal = np.zeros_like(time)
-
-    for i, t in enumerate(time):
-        k = np.floor(t / T)  # Numer okresu
-        t_mod = t - k * T  # Czas w bieżącym okresie
+        time = np.linspace(0, t_end, int(d * sampling_rate))
+        signal = A * np.random.normal(0, 1, len(time))
         
-        if t_start <= t_mod < kw * T + t_start:
-            signal[i] = A
-        elif kw * T + t_start <= t_mod < T + t_start:
-            signal[i] = -A
-    
-    plot_signal(signal, time)
+        plot_signal(signal, time)
+        sigObj = SignalObject(signal, time, sampling_rate, A=A, t_start=t_start, d=d)
+        return sigObj
 
-    return signal, time
+    @staticmethod
+    def sin_signal(A=1, T=1, t_start=0, d=2, sampling_rate=1000):
+        # S3
+        # TODO: Check if this is correct
+        t_end = t_start + d
 
-def triangle_signal(A=1, T=1, t_start=0, d=2, kw=0.5, sampling_rate=1000):
-    # S8
-    t_end = t_start + d
+        time = np.linspace(0, t_end, int(d * sampling_rate))
+        signal = A * np.sin(2 * np.pi * (time - t_start) / T)
 
-    time = np.linspace(0, t_end, int(d * sampling_rate))
-    signal = np.zeros_like(time)
+        plot_signal(signal, time)
+        sigObj = SignalObject(signal, time, sampling_rate, A=A, T=T, t_start=t_start, d=d)
+        return sigObj
 
-    for i, t in enumerate(time):
-        k = np.floor(t / T)  # Numer okresu
-        t_mod = t - k * T  # Czas w bieżącym okresie
+    @staticmethod
+    def sin_half_signal(A=1, T=1, t_start=0, d=2, sampling_rate=1000):
+        # S4
+
+        t_end = t_start + d
+
+        time = np.linspace(0, t_end, int(d * sampling_rate))
+        signal = 0.5 * A * ((np.sin(2 * np.pi * (time - t_start) / T)) + np.abs(np.sin(2 * np.pi * (time - t_start) / T)))
+
+        plot_signal(signal, time)
+        sigObj = SignalObject(signal, time, sampling_rate, A=A, T=T, t_start=t_start, d=d)
+        return sigObj
+
+    @staticmethod
+    def sin_twohalf_signal(A=1, T=1, t_start=0, d=2, sampling_rate=1000):
+        # S5
+        t_end = t_start + d
+
+        time = np.linspace(0, t_end, int(d * sampling_rate))
+        signal = A * np.abs(np.sin(2 * np.pi * (time - t_start) / T))
+
+        plot_signal(signal, time)
+        sigObj = SignalObject(signal, time, sampling_rate, A=A, T=T, t_start=t_start, d=d)
+        return sigObj
+
+    @staticmethod
+    def square_signal(A=1, T=1, kw=0.5, t_start=0, d=2, sampling_rate=1000):
+        # TODO: Check if this is correct
+        # S6
+
+        t_end = t_start + d
+
+        time = np.linspace(0, t_end, int(d * sampling_rate))
+        signal = np.zeros_like(time)
+
+        for i, t in enumerate(time):
+            k = np.floor(t / T)  # Numer okresu
+            t_mod = t - k * T  # Czas w bieżącym okresie
+            
+            if t_start <= t_mod < kw * T + t_start:
+                signal[i] = A
+            elif kw * T + t_start <= t_mod < T + t_start:
+                signal[i] = 0
         
-        if t_start <= t_mod < kw * T + t_start:
-            signal[i] = (A / (kw * T)) * (t_mod - t_start)
-        elif kw * T + t_start <= t_mod < T + t_start:
-            signal[i] = (-A / (T * (1 - kw))) * (t_mod - t_start) + A / (1 - kw)
+        plot_signal(signal, time)
+        sigObj = SignalObject(signal, time, sampling_rate, A=A, T=T, t_start=t_start, d=d, kw=kw)
+        return sigObj
 
-    plot_signal(signal, time)
+    @staticmethod
+    def square_symmetric_signal(A=1, T=1, kw=0.5, t_start=0, d=2, sampling_rate=1000):
+        # S7
+        # TODO: Check if this is correct
+        t_end = t_start + d
 
-    return signal, time
+        time = np.linspace(0, t_end, int(d * sampling_rate))
+        signal = np.zeros_like(time)
 
-def step_signal(A=1, t_start=0, d=2, sampling_rate=1000):
-    # S9
-    # Czas trwania sygnału w sekundach
-    t_end = t_start + d
-    t_step = t_end / 2
+        for i, t in enumerate(time):
+            k = np.floor(t / T)  # Numer okresu
+            t_mod = t - k * T  # Czas w bieżącym okresie
+            
+            if t_start <= t_mod < kw * T + t_start:
+                signal[i] = A
+            elif kw * T + t_start <= t_mod < T + t_start:
+                signal[i] = -A
+        
+        plot_signal(signal, time)
+        sigObj = SignalObject(signal, time, sampling_rate, A=A, T=T, t_start=t_start, d=d, kw=kw)
+        return sigObj
 
-    time = np.linspace(0, t_end, int(d * sampling_rate))
-    signal = np.piecewise(time, [time < t_step, time >= t_step], [0, A])
-    
-    
-    plot_signal(signal, time)
+    @staticmethod
+    def triangle_signal(A=1, T=1, t_start=0, d=2, kw=0.5, sampling_rate=1000):
+        # S8
+        t_end = t_start + d
 
-    return signal, time
+        time = np.linspace(0, t_end, int(d * sampling_rate))
+        signal = np.zeros_like(time)
 
-def unit_impulse(A=1, n_start=0, n_spike = 10, sampling_rate=10, d=2):
-    # S10
-    time = np.linspace(0, d, int(d * sampling_rate))
-    signal = np.zeros_like(time)
-    if n_spike < len(signal):
-        signal[n_spike] = A
-    else:
-        signal[-1] = A
+        for i, t in enumerate(time):
+            k = np.floor(t / T)  # Numer okresu
+            t_mod = t - k * T  # Czas w bieżącym okresie
+            
+            if t_start <= t_mod < kw * T + t_start:
+                signal[i] = (A / (kw * T)) * (t_mod - t_start)
+            elif kw * T + t_start <= t_mod < T + t_start:
+                signal[i] = (-A / (T * (1 - kw))) * (t_mod - t_start) + A / (1 - kw)
 
-    plot_points(signal, time)
-    
-    return signal, time
+        plot_signal(signal, time)
+        sigObj = SignalObject(signal, time, sampling_rate, A=A, T=T, t_start=t_start, d=d, kw=kw)
+        return sigObj
 
-def impulse_noise(A=1, t_start=0, d=2, sampling_rate=30, p=0.5):
-    # S11
-    # TODO: Check if this is correct
-    t_end = t_start + d
+    @staticmethod
+    def step_signal(A=1, t_start=0, d=2, sampling_rate=1000):
+        # S9
+        # Czas trwania sygnału w sekundach
+        t_end = t_start + d
+        t_step = t_end / 2
 
-    time = np.linspace(0, t_end, int(d * sampling_rate))
-    signal = np.random.choice([0, A], len(time), p=[1-p, p])
-    
-    plot_points(signal, time)
-    
-    return signal, time
+        time = np.linspace(0, t_end, int(d * sampling_rate))
+        signal = np.piecewise(time, [time < t_step, time >= t_step], [0, A])
+        
+        
+        plot_signal(signal, time)
+        sigObj = SignalObject(signal, time, sampling_rate, A=A, t_start=t_start, d=d)
+        return sigObj
+
+    @staticmethod
+    def unit_impulse(A=1, n_start=0, n_spike = 10, sampling_rate=10, d=2):
+        # S10
+        time = np.linspace(0, d, int(d * sampling_rate))
+        signal = np.zeros_like(time)
+        if n_spike < len(signal):
+            signal[n_spike] = A
+        else:
+            signal[-1] = A
+
+        plot_points(signal, time)
+        sigObj = SignalObject(signal, time, sampling_rate, A=A, n_start=n_start, n_spike=n_spike, discrete_signal=True)
+        return sigObj
+
+    @staticmethod
+    def impulse_noise(A=1, t_start=0, d=2, sampling_rate=30, p=0.5):
+        # S11
+        # TODO: Check if this is correct
+        t_end = t_start + d
+
+        time = np.linspace(0, t_end, int(d * sampling_rate))
+        signal = np.random.choice([0, A], len(time), p=[1-p, p])
+        
+        plot_points(signal, time)
+        sigObj = SignalObject(signal, time, sampling_rate, A=A, t_start=t_start, d=d, p=p, discrete_signal=True)
+        return sigObj
 
 if __name__ == "__main__":
-    # uniformly_distributed_noise()
+    # SignalGenerator.uniformly_distributed_noise()
     # gaussian_noise()
     # sin_signal()
     # sin_half_signal()
     # sin_twohalf_signal()
     # square_signal()
-    square_symmetric_signal()
+    # SignalGenerator.square_symmetric_signal()
     # triangle_signal()
     # step_signal()
     # unit_impulse()
-    # impulse_noise()
+    SignalGenerator.impulse_noise()
