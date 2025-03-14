@@ -1,6 +1,20 @@
 import numpy as np
 from plots import plot_signal, plot_points
 
+class SignalObject:
+    def __init__(self, signal, time, sampling_rate=None, A=None, T=None, t_start=None, d=None, kw=None, n_start=None, n_spike=None, p=None):
+        self.signal = signal
+        self.time = time
+        self.sampling_rate = sampling_rate
+        self.A = A
+        self.T = T
+        self.t_start = t_start
+        self.d = d
+        self.kw = kw
+        self.n_start = n_start
+        self.n_spike = n_spike
+        self.p = p
+
 
 def uniformly_distributed_noise(A=1, t_start=0, d=2, sampling_rate=1000):
     # S1
@@ -14,10 +28,7 @@ def uniformly_distributed_noise(A=1, t_start=0, d=2, sampling_rate=1000):
     return signal, time
 
 def gaussian_noise(A=1, t_start=0, d=2, sampling_rate=1000):
-    # TODO: czy trzeba skorzystac ze wzoru na rozkald normalny czy mozna tak jak nizej?
     # S2
-    # parameters
-      # duration
     t_end = t_start + d
 
     time = np.linspace(0, t_end, int(d * sampling_rate))
@@ -69,19 +80,16 @@ def square_signal(A=1, T=1, kw=0.5, t_start=0, d=2, sampling_rate=1000):
     t_end = t_start + d
 
     time = np.linspace(0, t_end, int(d * sampling_rate))
-
     signal = np.zeros_like(time)
-    cycles = int(T * sampling_rate)
-    high_cycles = int(cycles * kw)
 
-    for k in range(int(len(time) / cycles) + 1):
-        start_idx = int(k * cycles)
-        end_idx = min(start_idx + high_cycles, len(time))
-        signal[start_idx:end_idx] = A
+    for i, t in enumerate(time):
+        k = np.floor(t / T)  # Numer okresu
+        t_mod = t - k * T  # Czas w bieżącym okresie
         
-        start_low_idx = end_idx
-        end_low_idx = min(start_low_idx + (cycles - high_cycles), len(time))
-        signal[start_low_idx:end_low_idx] = 0
+        if t_start <= t_mod < kw * T + t_start:
+            signal[i] = A
+        elif kw * T + t_start <= t_mod < T + t_start:
+            signal[i] = 0
     
     plot_signal(signal, time)
 
@@ -93,27 +101,40 @@ def square_symmetric_signal(A=1, T=1, kw=0.5, t_start=0, d=2, sampling_rate=1000
     t_end = t_start + d
 
     time = np.linspace(0, t_end, int(d * sampling_rate))
-
     signal = np.zeros_like(time)
-    cycles = int(T * sampling_rate)
-    high_cycles = int(cycles * kw)
 
-    for k in range(int(len(time) / cycles) + 1):
-        start_idx = int(k * cycles)
-        end_idx = min(start_idx + high_cycles, len(time))
-        signal[start_idx:end_idx] = A
+    for i, t in enumerate(time):
+        k = np.floor(t / T)  # Numer okresu
+        t_mod = t - k * T  # Czas w bieżącym okresie
         
-        start_low_idx = end_idx
-        end_low_idx = min(start_low_idx + (cycles - high_cycles), len(time))
-        signal[start_low_idx:end_low_idx] = -A
+        if t_start <= t_mod < kw * T + t_start:
+            signal[i] = A
+        elif kw * T + t_start <= t_mod < T + t_start:
+            signal[i] = -A
     
     plot_signal(signal, time)
 
     return signal, time
 
-def triangle_signal():
+def triangle_signal(A=1, T=1, t_start=0, d=2, kw=0.5, sampling_rate=1000):
     # S8
-    pass
+    t_end = t_start + d
+
+    time = np.linspace(0, t_end, int(d * sampling_rate))
+    signal = np.zeros_like(time)
+
+    for i, t in enumerate(time):
+        k = np.floor(t / T)  # Numer okresu
+        t_mod = t - k * T  # Czas w bieżącym okresie
+        
+        if t_start <= t_mod < kw * T + t_start:
+            signal[i] = (A / (kw * T)) * (t_mod - t_start)
+        elif kw * T + t_start <= t_mod < T + t_start:
+            signal[i] = (-A / (T * (1 - kw))) * (t_mod - t_start) + A / (1 - kw)
+
+    plot_signal(signal, time)
+
+    return signal, time
 
 def step_signal(A=1, t_start=0, d=2, sampling_rate=1000):
     # S9
@@ -160,7 +181,7 @@ if __name__ == "__main__":
     # sin_signal()
     # sin_half_signal()
     # sin_twohalf_signal()
-    square_signal()
+    # square_signal()
     square_symmetric_signal()
     # triangle_signal()
     # step_signal()

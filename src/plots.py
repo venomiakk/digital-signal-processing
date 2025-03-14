@@ -6,7 +6,7 @@ def plot_signal(signal, time):
     fig, (plot1, plot2) = plt.subplots(1, 2, figsize=(12, 3))
 
     plot1.grid()
-    plot1.axhline(y=0, color='k', linewidth=1.5)
+    plot1.axhline(y=0, color='k', linewidth=1.5, alpha=0.3)
     plot1.plot(time, signal)
     plot1.set_xlabel("Time [s]")
     plot1.set_ylabel("Amplitude")
@@ -26,7 +26,7 @@ def plot_points(signal, time):
     fig, (plot1, plot2) = plt.subplots(1, 2, figsize=(12, 3))
 
     plot1.grid()
-    plot1.axhline(y=0, color='k', linewidth=1.5)
+    plot1.axhline(y=0, color='k', linewidth=1.5, alpha=0.3)
     plot1.scatter(time, signal)
     plot1.set_xlabel("Time [s]")
     plot1.set_ylabel("Amplitude")
