@@ -34,15 +34,8 @@ class SignalGenerator:
 
         time = np.linspace(0, t_end, int(d * sampling_rate))
         signal = np.random.uniform(-A, A, len(time))
-        
-        plot_signal(signal, time)
-        sigObj = SignalObject(signal, time, sampling_rate, A=A, t_start=t_start, d=d)
-        print(sigObj.mean_value)
-        print(sigObj.abs_mean_value)
-        print(sigObj.rms_value)
-        print(sigObj.variance)
-        print(sigObj.avg_power)
 
+        sigObj = SignalObject(signal, time, sampling_rate, A=A, t_start=t_start, d=d)
         return sigObj
 
     @staticmethod
@@ -52,8 +45,7 @@ class SignalGenerator:
 
         time = np.linspace(0, t_end, int(d * sampling_rate))
         signal = A * np.random.normal(0, 1, len(time))
-        
-        plot_signal(signal, time)
+
         sigObj = SignalObject(signal, time, sampling_rate, A=A, t_start=t_start, d=d)
         return sigObj
 
@@ -66,7 +58,6 @@ class SignalGenerator:
         time = np.linspace(0, t_end, int(d * sampling_rate))
         signal = A * np.sin(2 * np.pi * (time - t_start) / T)
 
-        plot_signal(signal, time)
         sigObj = SignalObject(signal, time, sampling_rate, A=A, T=T, t_start=t_start, d=d)
         return sigObj
 
@@ -79,7 +70,6 @@ class SignalGenerator:
         time = np.linspace(0, t_end, int(d * sampling_rate))
         signal = 0.5 * A * ((np.sin(2 * np.pi * (time - t_start) / T)) + np.abs(np.sin(2 * np.pi * (time - t_start) / T)))
 
-        plot_signal(signal, time)
         sigObj = SignalObject(signal, time, sampling_rate, A=A, T=T, t_start=t_start, d=d)
         return sigObj
 
@@ -91,7 +81,6 @@ class SignalGenerator:
         time = np.linspace(0, t_end, int(d * sampling_rate))
         signal = A * np.abs(np.sin(2 * np.pi * (time - t_start) / T))
 
-        plot_signal(signal, time)
         sigObj = SignalObject(signal, time, sampling_rate, A=A, T=T, t_start=t_start, d=d)
         return sigObj
 
@@ -113,8 +102,7 @@ class SignalGenerator:
                 signal[i] = A
             elif kw * T + t_start <= t_mod < T + t_start:
                 signal[i] = 0
-        
-        plot_signal(signal, time)
+
         sigObj = SignalObject(signal, time, sampling_rate, A=A, T=T, t_start=t_start, d=d, kw=kw)
         return sigObj
 
@@ -135,8 +123,7 @@ class SignalGenerator:
                 signal[i] = A
             elif kw * T + t_start <= t_mod < T + t_start:
                 signal[i] = -A
-        
-        plot_signal(signal, time)
+
         sigObj = SignalObject(signal, time, sampling_rate, A=A, T=T, t_start=t_start, d=d, kw=kw)
         return sigObj
 
@@ -157,7 +144,6 @@ class SignalGenerator:
             elif kw * T + t_start <= t_mod < T + t_start:
                 signal[i] = (-A / (T * (1 - kw))) * (t_mod - t_start) + A / (1 - kw)
 
-        plot_signal(signal, time)
         sigObj = SignalObject(signal, time, sampling_rate, A=A, T=T, t_start=t_start, d=d, kw=kw)
         return sigObj
 
@@ -170,9 +156,7 @@ class SignalGenerator:
 
         time = np.linspace(0, t_end, int(d * sampling_rate))
         signal = np.piecewise(time, [time < t_step, time >= t_step], [0, A])
-        
-        
-        plot_signal(signal, time)
+
         sigObj = SignalObject(signal, time, sampling_rate, A=A, t_start=t_start, d=d)
         return sigObj
 
@@ -186,7 +170,6 @@ class SignalGenerator:
         else:
             signal[-1] = A
 
-        plot_points(signal, time)
         sigObj = SignalObject(signal, time, sampling_rate, A=A, n_start=n_start, n_spike=n_spike, discrete_signal=True)
         return sigObj
 
@@ -198,8 +181,7 @@ class SignalGenerator:
 
         time = np.linspace(0, t_end, int(d * sampling_rate))
         signal = np.random.choice([0, A], len(time), p=[1-p, p])
-        
-        plot_points(signal, time)
+
         sigObj = SignalObject(signal, time, sampling_rate, A=A, t_start=t_start, d=d, p=p, discrete_signal=True)
         return sigObj
 
@@ -208,7 +190,6 @@ class SignalOperations:
     def add_signals(signal1, signal2):
         new_signal = signal1.signal + signal2.signal
         new_time = signal1.time
-        plot_signal(new_signal, new_time)
         new_sampling_rate = signal1.sampling_rate
 
         return SignalObject(new_signal, new_time, sampling_rate=new_sampling_rate)
@@ -217,7 +198,6 @@ class SignalOperations:
     def subtract_signals(signal1, signal2):
         new_signal = signal1.signal - signal2.signal
         new_time = signal1.time
-        plot_signal(new_signal, new_time)
         new_sampling_rate = signal1.sampling_rate
 
         return SignalObject(new_signal, new_time, sampling_rate=new_sampling_rate)
@@ -226,7 +206,6 @@ class SignalOperations:
     def multiply_signals(signal1, signal2):
         new_signal = signal1.signal * signal2.signal
         new_time = signal1.time
-        plot_signal(new_signal, new_time)
         new_sampling_rate = signal1.sampling_rate
 
         return SignalObject(new_signal, new_time, sampling_rate=new_sampling_rate)
@@ -236,7 +215,6 @@ class SignalOperations:
         epsilon = 1e-10
         new_signal = signal1.signal / (signal2.signal + epsilon)
         new_time = signal1.time
-        plot_signal(new_signal, new_time)
         new_sampling_rate = signal1.sampling_rate
 
         return SignalObject(new_signal, new_time, sampling_rate=new_sampling_rate)

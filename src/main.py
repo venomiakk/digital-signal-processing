@@ -1,11 +1,9 @@
-from interface import SignalProcessingApp
+import sys
 from PyQt5.QtWidgets import QApplication
-
-def main():
-    app = QApplication([])
-    ex = SignalProcessingApp()
-    app.exec_()
-
+from interface import SignalProcessingApp
 
 if __name__ == "__main__":
-    main()
+    app = QApplication(sys.argv)
+    window = SignalProcessingApp()
+    window.show()
+    sys.exit(app.exec_())

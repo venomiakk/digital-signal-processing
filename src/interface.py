@@ -7,6 +7,12 @@ from signals import *
 from plots import plot_signal
 from filesRW import FileRW
 
+# TODO: 
+#* w operations_tab.py:
+#* - przesunięcie, czas trwania, próbkowanie powinny być ustalane dla obu sygnałów jednocześnie
+#* odczytywanie sygnałów z pliku w signal_tab.py i operations_tab.py
+
+
 
 class SignalProcessingApp(QWidget):
     def __init__(self):
@@ -66,18 +72,213 @@ class SignalProcessingApp(QWidget):
         layout = QVBoxLayout()
         operations_tab.setLayout(layout)
 
-        # Add widgets for operations on signals here
-        operation_label = QLabel("Operacje na sygnałach")
-        layout.addWidget(operation_label)
-
+        # Create horizontal layout for signal selectors and operation selector
+        signals_layout = QHBoxLayout()
+        
+        # Create first signal column with specific plot method
+        self.signal1_col = self.create_signal_column("Sygnał 1", self.plot_signal1)
+        signals_layout.addLayout(self.signal1_col)
+        
+        # Create operation selector in the middle
+        op_layout = QVBoxLayout()
+        op_label = QLabel("Operacja")
+        op_layout.addWidget(op_label)
+        
+        self.operation_selector = QComboBox()
+        operations = ["Dodawanie", "Odejmowanie", "Mnożenie", "Dzielenie"]
+        self.operation_selector.addItems(operations)
+        op_layout.addWidget(self.operation_selector)
+        
+        # Add execute operation button
+        execute_button = QPushButton("Wykonaj operację")
+        execute_button.clicked.connect(self.execute_operation)
+        op_layout.addWidget(execute_button)
+        
+        # Add save result button
+        save_result_button = QPushButton("Zapisz wynik")
+        save_result_button.clicked.connect(self.save_result)
+        op_layout.addWidget(save_result_button)
+        
+        op_layout.addStretch(1)
+        signals_layout.addLayout(op_layout)
+        
+        # Create second signal column with specific plot method
+        self.signal2_col = self.create_signal_column("Sygnał 2", self.plot_signal2)
+        signals_layout.addLayout(self.signal2_col)
+        
+        # Add the signals layout to the main layout
+        layout.addLayout(signals_layout)
+        
+        # Create canvases for plotting
+        plots_layout = QHBoxLayout()
+        
+        # Signal 1 plot
+        signal1_plot_layout = QVBoxLayout()
+        signal1_plot_layout.addWidget(QLabel("Sygnał 1"))
+        self.canvas_signal1 = FigureCanvas(Figure(figsize=(4, 3)))
+        signal1_plot_layout.addWidget(self.canvas_signal1)
+        plots_layout.addLayout(signal1_plot_layout)
+        
+        # Signal 2 plot
+        signal2_plot_layout = QVBoxLayout()
+        signal2_plot_layout.addWidget(QLabel("Sygnał 2"))
+        self.canvas_signal2 = FigureCanvas(Figure(figsize=(4, 3)))
+        signal2_plot_layout.addWidget(self.canvas_signal2)
+        plots_layout.addLayout(signal2_plot_layout)
+        
+        # Result plot
+        result_plot_layout = QVBoxLayout()
+        result_plot_layout.addWidget(QLabel("Wynik operacji"))
+        self.canvas_result = FigureCanvas(Figure(figsize=(4, 3)))
+        result_plot_layout.addWidget(self.canvas_result)
+        plots_layout.addLayout(result_plot_layout)
+        
+        layout.addLayout(plots_layout)
+        
         self.tab_widget.addTab(operations_tab, "Operacje")
+        
+    def execute_operation(self):
+        # Generate both signals based on UI parameters
+        signal1 = self.generate_signal_from_column(self.signal1_col)
+        signal2 = self.generate_signal_from_column(self.signal2_col)
+        
+        if not signal1 or not signal2:
+            QMessageBox.warning(
+                self,
+                "Brak sygnału",
+                "Proszę upewnić się, że oba sygnały są poprawnie skonfigurowane.",
+                QMessageBox.Ok
+            )
+            return
+        
+        # Plot both input signals
+        self.plot_on_canvas(signal1, self.canvas_signal1)
+        self.plot_on_canvas(signal2, self.canvas_signal2)
+        
+        # Perform selected operation
+        operation = self.operation_selector.currentText()
+        if operation == "Dodawanie":
+            result = SignalOperations.add_signals(signal1, signal2)
+        elif operation == "Odejmowanie":
+            result = SignalOperations.subtract_signals(signal1, signal2)
+        elif operation == "Mnożenie":
+            result = SignalOperations.multiply_signals(signal1, signal2)
+        elif operation == "Dzielenie":
+            result = SignalOperations.divide_signals(signal1, signal2)
+        
+        if result:
+            # Store the result signal
+            self.result_signal = result
+            # Plot the result
+            self.plot_on_canvas(result, self.canvas_result)
+        else:
+            QMessageBox.warning(
+                self,
+                "Błąd operacji",
+                "Nie udało się wykonać operacji na sygnałach.",
+                QMessageBox.Ok
+            )
+
+    def generate_signal_from_column(self, col_layout):
+        signal_selector = col_layout.itemAt(0).widget()
+        selected_signal = signal_selector.currentText()
+        signal_function = self.signal_functions.get(selected_signal)
+        
+        if not signal_function:
+            return None
+            
+        # Map UI parameter names to function parameter names
+        param_mapping = {
+            'amplitude': 'A',
+            'duration': 'd',
+            't1': 't_start',
+            'period': 'T',
+            'sampling': 'sampling_rate',
+            'kw': 'kw',
+            'sample_number': 'n_spike',
+            'probability': 'p'
+        }
+        
+        # Get values from enabled input fields
+        params = {}
+        for ui_param, func_param in param_mapping.items():
+            input_field = self.parameter_inputs.get(ui_param)
+            if input_field and input_field.isEnabled() and input_field.text():
+                try:
+                    params[func_param] = float(input_field.text())
+                except ValueError:
+                    pass
+        
+        # Call the signal function with parameters
+        return signal_function(**params)
+
+    def plot_on_canvas(self, signal_obj, canvas):
+        if not signal_obj:
+            return
+            
+        sig, time = signal_obj.signal, signal_obj.time
+        
+        try:
+            num_bins = int(self.parameter_inputs['bins'].text())
+        except (ValueError, TypeError):
+            num_bins = 20
+        
+        if signal_obj.discrete_signal:
+            fig = plot_points(sig, time, bins_no=num_bins)
+        else:
+            fig = plot_signal(sig, time, bins_no=num_bins)
+        
+        canvas.figure.clear()
+        canvas.figure = fig
+        canvas.draw()
+
+    def save_result(self):
+        if not hasattr(self, 'result_signal') or self.result_signal is None:
+            QMessageBox.warning(
+                self,
+                "Brak sygnału do zapisania",
+                "Nie wykonano jeszcze operacji. Wykonaj operację, aby uzyskać sygnał do zapisania.",
+                QMessageBox.Ok
+            )
+            return
+        
+        # Open file dialog to select save location
+        options = QFileDialog.Options()
+        filename, _ = QFileDialog.getSaveFileName(
+            self, 
+            "Zapisz wynik operacji", 
+            "", 
+            "Signal Files (*.pkl);;All Files (*)", 
+            options=options
+        )
+        
+        if filename:
+            # Add .pkl extension if not provided
+            if not filename.endswith('.pkl'):
+                filename += '.pkl'
+            
+            # Save the signal using FileRW
+            if FileRW.write_signal_to_file(self.result_signal, filename):
+                QMessageBox.information(
+                    self,
+                    "Sygnał zapisany",
+                    f"Wynikowy sygnał został zapisany w: {filename}",
+                    QMessageBox.Ok
+                )
+            else:
+                QMessageBox.critical(
+                    self,
+                    "Błąd zapisu sygnału",
+                    "Wystąpił błąd podczas zapisu wynikowego sygnału.",
+                    QMessageBox.Ok
+                )
 
     def create_signal_column(self, title, plot_method):
         col_layout = QVBoxLayout()
-
-        label = QLabel(title)
-        col_layout.addWidget(label)
-
+        # col_layout.setSpacing(0)
+        # label = QLabel(title)
+        # col_layout.addWidget(label)
+        # col_layout.addSpacing(5)
         signal_selector = QComboBox()
         signal_selector.addItems(self.types_of_signal)
         # Set maximum visible items to show all signals without scrolling
@@ -259,7 +460,7 @@ class SignalProcessingApp(QWidget):
         self.plot(self.signal_col, self.canvas)
 
     def plot(self, col_layout, canvas):
-        signal_selector = col_layout.itemAt(1).widget()
+        signal_selector = col_layout.itemAt(0).widget()
         selected_signal = signal_selector.currentText()
         signal_function = self.signal_functions.get(selected_signal)
         if signal_function:
@@ -305,3 +506,17 @@ class SignalProcessingApp(QWidget):
             canvas.figure.clear()
             canvas.figure = fig
             canvas.draw()
+
+    def plot_signal1(self):
+        # Generate signal from first column and plot on first canvas
+        signal = self.generate_signal_from_column(self.signal1_col)
+        if signal:
+            self.plot_on_canvas(signal, self.canvas_signal1)
+            self.current_signal = signal  # Store for potential saving
+
+    def plot_signal2(self):
+        # Generate signal from second column and plot on second canvas
+        signal = self.generate_signal_from_column(self.signal2_col)
+        if signal:
+            self.plot_on_canvas(signal, self.canvas_signal2)
+            self.current_signal = signal  # Store for potential saving

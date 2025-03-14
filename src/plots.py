@@ -18,7 +18,7 @@ def plot_signal(signal, time, bins_no=20):
     plot2.set_ylabel("Częstość")
 
     fig.tight_layout()
-    plt.show()
+    # plt.show()
     return fig
 
 
@@ -38,5 +38,5 @@ def plot_points(signal, time, bins_no=20):
     plot2.set_ylabel("Frequency")
 
     fig.tight_layout()
-    plt.show()
+    # plt.show()
     return fig
