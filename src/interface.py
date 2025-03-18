@@ -19,6 +19,7 @@ from filesRW import FileRW
 
 class SignalProcessingApp(QWidget):
     def __init__(self):
+        self.parameter_inputs = {}
         super().__init__()
         self.current_signal = None
         self.initUI()
@@ -80,8 +81,8 @@ class SignalProcessingApp(QWidget):
         signals_layout = QHBoxLayout()
         
         # Create first signal column with specific plot and load methods
-        self.signal1_col = self.create_signal_column("Sygnał 1", self.plot_signal1, self.load_signal1)
-        signals_layout.addLayout(self.signal1_col)
+        self.signal_col = self.create_signal_column("Sygnał 1", self.plot_signal, self.load_signal1)
+        signals_layout.addLayout(self.signal_col)
         
         # Create operation selector in the middle
         op_layout = QVBoxLayout()
@@ -107,7 +108,7 @@ class SignalProcessingApp(QWidget):
         signals_layout.addLayout(op_layout)
         
         # Create second signal column with specific plot and load methods
-        self.signal2_col = self.create_signal_column("Sygnał 2", self.plot_signal2, self.load_signal2)
+        self.signal2_col = self.create_signal_column("Sygnał 2", self.plot_signal, self.load_signal2)
         signals_layout.addLayout(self.signal2_col)
         
         # Add the signals layout to the main layout
@@ -285,38 +286,32 @@ class SignalProcessingApp(QWidget):
 
     def create_signal_column(self, title, plot_method, load_method=None):
         col_layout = QVBoxLayout()
-        # col_layout.setSpacing(0)
-        # label = QLabel(title)
-        # col_layout.addWidget(label)
-        # col_layout.addSpacing(5)
         signal_selector = QComboBox()
         signal_selector.addItems(self.types_of_signal)
-        # Set maximum visible items to show all signals without scrolling
         signal_selector.setMaxVisibleItems(len(self.types_of_signal))
-        # Connect the signal selector to update input fields
-        signal_selector.currentTextChanged.connect(self.update_input_fields)
+        signal_selector.currentTextChanged.connect(
+            lambda: self.update_input_fields(signal_selector.currentText(), col_layout))
         col_layout.addWidget(signal_selector)
 
-        # Create form layout for parameters
         form_layout = QFormLayout()
         form_layout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
-        
+
         amplitude_input = QLineEdit()
         amplitude_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         form_layout.addRow("Amplituda:", amplitude_input)
-        
+
         duration_input = QLineEdit()
         duration_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         form_layout.addRow("Czas trwania [s]:", duration_input)
-        
+
         t_start_input = QLineEdit()
         t_start_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         form_layout.addRow("Przesunięcie [s]:", t_start_input)
-        
+
         sampling_input = QLineEdit()
         sampling_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         form_layout.addRow("Próbkowanie [próbki/s]:", sampling_input)
-        
+
         period_input = QLineEdit()
         period_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         form_layout.addRow("Okres [s]:", period_input)
@@ -335,45 +330,36 @@ class SignalProcessingApp(QWidget):
 
         col_layout.addLayout(form_layout)
 
-        # Create a horizontal layout for buttons
         button_row = QHBoxLayout()
-        
-        # Add plot button to the horizontal layout
         plot_button = QPushButton("Wygeneruj sygnał")
         plot_button.setFixedWidth(100)
         plot_button.clicked.connect(plot_method)
         button_row.addWidget(plot_button)
 
-        # Add save button
         save_button = QPushButton("Zapisz sygnał")
         save_button.setFixedWidth(100)
         save_button.clicked.connect(self.save_signal)
         button_row.addWidget(save_button)
-        
-        # Add load from file button
+
         load_button = QPushButton("Wczytaj z pliku")
         load_button.setFixedWidth(100)
         if load_method:
             load_button.clicked.connect(load_method)
         button_row.addWidget(load_button)
-            
-        # Add spacing between elements
+
         button_row.addSpacing(10)
-        
-        # Add bin number label and input to the horizontal layout
         button_row.addStretch(1)
         button_row.addWidget(QLabel("Liczba przedziałów histogramu:"))
-        
+
         bin_input = QLineEdit()
-        bin_input.setText("20")  # Default value
-        bin_input.setFixedWidth(80)  # Make it reasonably sized
+        bin_input.setText("20")
+        bin_input.setFixedWidth(80)
         button_row.addWidget(bin_input)
-        
-        # Add the horizontal layout to the main column layout
+
         col_layout.addLayout(button_row)
-        
-        # Store references to all inputs
-        self.parameter_inputs = {
+
+        # Store references to all inputs for this column
+        self.parameter_inputs[col_layout] = {
             'amplitude': amplitude_input,
             'duration': duration_input,
             't1': t_start_input,
@@ -382,19 +368,14 @@ class SignalProcessingApp(QWidget):
             'kw': kw_input,
             'sample_number': sample_number_input,
             'probability': probability_input,
-            'bins': bin_input  # Add the new input to parameter dictionary
+            'bins': bin_input
         }
 
-        # Save reference to the signal selector
-        self.signal_selector = signal_selector
-        
-        # Set initial state of input fields
-        self.update_input_fields(signal_selector.currentText())
-        
+        self.update_input_fields(signal_selector.currentText(), col_layout)
+
         return col_layout
 
-    def update_input_fields(self, signal_type):
-        # Define which parameters are needed for each signal type
+    def update_input_fields(self, signal_type, col_layout):
         param_mapping = {
             "szum o rozkładzie jednostajnym": ['amplitude', 'duration', 'sampling'],
             "szum gaussowski": ['amplitude', 'duration', 'sampling'],
@@ -408,21 +389,18 @@ class SignalProcessingApp(QWidget):
             "impuls jednostkowy": ['amplitude', 'duration', 'sampling', 'sample_number'],
             "szum impulsowy": ['amplitude', 'duration', 'sampling', 'probability']
         }
-        
-        # Get the parameters needed for the selected signal type
+
         needed_params = param_mapping.get(signal_type, [])
-        
-        # Enable/disable input fields based on the needed parameters
-        for param_name, input_field in self.parameter_inputs.items():
-            
+        inputs = self.parameter_inputs[col_layout]
+
+        for param_name, input_field in inputs.items():
             if param_name == 'bins':
                 continue
-
             if param_name in needed_params:
                 input_field.setEnabled(True)
             else:
                 input_field.setEnabled(False)
-                input_field.clear()  # Clear the disabled fields
+                input_field.clear()
 
     def create_input_field(self, label_text, layout):
         label = QLabel(label_text)
@@ -483,7 +461,7 @@ class SignalProcessingApp(QWidget):
         if signal_function:
             # Collect and convert parameters from input fields
             params = {}
-            
+
             # Map UI parameter names to function parameter names
             param_mapping = {
                 'amplitude': 'A',
@@ -495,27 +473,28 @@ class SignalProcessingApp(QWidget):
                 'sample_number': 'n_spike',
                 'probability': 'p'
             }
-            
+
             # Get values from enabled input fields
+            inputs = self.parameter_inputs[col_layout]
             for ui_param, func_param in param_mapping.items():
-                input_field = self.parameter_inputs.get(ui_param)
+                input_field = inputs.get(ui_param)
                 if input_field and input_field.isEnabled() and input_field.text():
                     try:
                         params[func_param] = float(input_field.text())
                     except ValueError:
                         # Use default if conversion fails
                         pass
-            
+
             # Call the signal function with parameters
             sigObj = signal_function(**params)
             sig, time = sigObj.signal, sigObj.time
             self.current_signal = sigObj
 
             try:
-                num_bins = int(self.parameter_inputs['bins'].text())
+                num_bins = int(inputs['bins'].text())
             except (ValueError, TypeError):
                 num_bins = 20  # Default if invalid input
-            
+
             if sigObj.discrete_signal:
                 fig = plot_points(sig, time, bins_no=num_bins)
             else:
@@ -524,19 +503,7 @@ class SignalProcessingApp(QWidget):
             canvas.figure = fig
             canvas.draw()
 
-    def plot_signal1(self):
-        # Generate signal from first column and plot on first canvas
-        signal = self.generate_signal_from_column(self.signal1_col)
-        if signal:
-            self.plot_on_canvas(signal, self.canvas_signal1)
-            self.current_signal = signal  # Store for potential saving
 
-    def plot_signal2(self):
-        # Generate signal from second column and plot on second canvas
-        signal = self.generate_signal_from_column(self.signal2_col)
-        if signal:
-            self.plot_on_canvas(signal, self.canvas_signal2)
-            self.current_signal = signal  # Store for potential saving
 
     def create_file_tab(self):
         file_tab = QWidget()
