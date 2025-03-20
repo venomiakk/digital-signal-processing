@@ -302,12 +302,6 @@ class SignalProcessApp(object):
         self.f_loadfile = QtWidgets.QPushButton(self.FileTab)
         self.f_loadfile.setGeometry(QtCore.QRect(20, 20, 131, 23))
         self.f_loadfile.setObjectName("f_loadfile")
-        self.f_sigattr = QtWidgets.QTextEdit(self.FileTab)
-        self.f_sigattr.setGeometry(QtCore.QRect(20, 90, 371, 261))
-        self.f_sigattr.setObjectName("f_sigattr")
-        self.f_sigvalues = QtWidgets.QTextEdit(self.FileTab)
-        self.f_sigvalues.setGeometry(QtCore.QRect(430, 90, 371, 261))
-        self.f_sigvalues.setObjectName("f_sigvalues")
         self.f_label1 = QtWidgets.QLabel(self.FileTab)
         self.f_label1.setGeometry(QtCore.QRect(30, 60, 121, 16))
         self.f_label1.setObjectName("f_label1")
@@ -328,6 +322,26 @@ class SignalProcessApp(object):
         self.f_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.f_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.f_frame.setObjectName("f_frame")
+        self.f_sigattr = QtWidgets.QTableWidget(self.FileTab)
+        self.f_sigattr.setGeometry(QtCore.QRect(10, 90, 391, 241))
+        self.f_sigattr.setObjectName("f_sigattr")
+        self.f_sigattr.setColumnCount(2)
+        self.f_sigattr.setRowCount(0)
+        item = QtWidgets.QTableWidgetItem()
+        self.f_sigattr.setHorizontalHeaderItem(0, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.f_sigattr.setHorizontalHeaderItem(1, item)
+        self.f_sigvalues = QtWidgets.QTableWidget(self.FileTab)
+        self.f_sigvalues.setGeometry(QtCore.QRect(440, 90, 391, 241))
+        self.f_sigvalues.setObjectName("f_sigvalues")
+        self.f_sigvalues.setColumnCount(3)
+        self.f_sigvalues.setRowCount(0)
+        item = QtWidgets.QTableWidgetItem()
+        self.f_sigvalues.setHorizontalHeaderItem(0, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.f_sigvalues.setHorizontalHeaderItem(1, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.f_sigvalues.setHorizontalHeaderItem(2, item)
         self.tabWidget.addTab(self.FileTab, "")
         SignalProcessApp.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(SignalProcessApp)
@@ -382,9 +396,10 @@ class SignalProcessApp(object):
         self.f_loadfile.clicked.connect(self.load_file_signal)
         self.f_refreshplot.clicked.connect(self.refresh_file_plot)
         
-        # Make text areas read-only
-        self.f_sigattr.setReadOnly(True)
-        self.f_sigvalues.setReadOnly(True)
+        # Make tables read-only (instead of TextEdits)
+        # Remove these lines:
+        # self.f_sigattr.setReadOnly(True) 
+        # self.f_sigvalues.setReadOnly(True)
         
         # Initialize the file tab plot frame
         self.setup_file_frame()
@@ -471,6 +486,16 @@ class SignalProcessApp(object):
         self.f_label2.setText(_translate("SignalProcessApp", "Wartości sygnału"))
         self.f_label3.setText(_translate("SignalProcessApp", "Liczba przediałów histogramu"))
         self.f_refreshplot.setText(_translate("SignalProcessApp", "Odśwież wykres"))
+        item = self.f_sigattr.horizontalHeaderItem(0)
+        item.setText(_translate("SignalProcessApp", "Atrybut"))
+        item = self.f_sigattr.horizontalHeaderItem(1)
+        item.setText(_translate("SignalProcessApp", "Wartość"))
+        item = self.f_sigvalues.horizontalHeaderItem(0)
+        item.setText(_translate("SignalProcessApp", "Indeks"))
+        item = self.f_sigvalues.horizontalHeaderItem(1)
+        item.setText(_translate("SignalProcessApp", "Czas [s]"))
+        item = self.f_sigvalues.horizontalHeaderItem(2)
+        item.setText(_translate("SignalProcessApp", "Wartość"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.FileTab), _translate("SignalProcessApp", "Pliki"))
     
     def setup_plot_frame(self):
@@ -576,11 +601,11 @@ class SignalProcessApp(object):
         
         ax1.set_xlabel("Czas [s]")
         ax1.set_ylabel("Amplituda")
-        ax1.setTitle("Sygnał")
+        ax1.set_title("Sygnał")
         
         # Plot histogram on middle subplot
         ax2.hist(signal_obj.signal, bins=bins)
-        ax2.setTitle("Histogram")
+        ax2.set_title("Histogram")
         ax2.set_xlabel("Amplituda")
         ax2.set_ylabel("Częstość")
         
@@ -1209,6 +1234,21 @@ class SignalProcessApp(object):
         
         # Create attribute to store current file signal
         self.file_signal = None
+        
+        # Configure tables to be read-only
+        self.f_sigattr.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.f_sigattr.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        
+        self.f_sigvalues.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.f_sigvalues.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        
+        # Set headers to stretch
+        self.f_sigattr.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
+        self.f_sigattr.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+        
+        self.f_sigvalues.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
+        self.f_sigvalues.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+        self.f_sigvalues.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
 
     def load_file_signal(self):
         """Load signal from file for the file tab"""
@@ -1231,10 +1271,8 @@ class SignalProcessApp(object):
                     # Store the signal
                     self.file_signal = signal_obj
                     
-                    # Display signal attributes
+                    # Display signal attributes and values in tables
                     self.display_signal_attributes(signal_obj)
-                    
-                    # Display signal values
                     self.display_signal_values(signal_obj)
                     
                     # Plot the signal
@@ -1247,7 +1285,7 @@ class SignalProcessApp(object):
                 QtWidgets.QMessageBox.critical(None, "Błąd", f"Nie udało się wczytać pliku: {str(e)}")
 
     def display_signal_attributes(self, signal_obj):
-        """Display signal attributes in the text area"""
+        """Display signal attributes in a QTableWidget"""
         # Create a mapping from technical names to human-readable names
         attr_name_mapping = {
             'A': 'Amplituda',
@@ -1267,13 +1305,11 @@ class SignalProcessApp(object):
             'avg_power': 'Średnia moc sygnału'
         }
         
-        # Clear the text area
-        self.f_sigattr.clear()
-        
-        # Build the attributes text
-        attributes_text = "ATRYBUTY SYGNAŁU:\n" + "="*50 + "\n\n"
+        # Clear the table
+        self.f_sigattr.setRowCount(0)
         
         # Get all attributes that are not None and are not signal/time
+        valid_attributes = []
         for attr_name in dir(signal_obj):
             # Skip private attributes, methods, and signal/time
             if (attr_name.startswith('_') or 
@@ -1286,7 +1322,7 @@ class SignalProcessApp(object):
             # Skip None values
             if attr_value is None:
                 continue
-            
+                
             # Get human-readable name or use original if not in mapping
             display_name = attr_name_mapping.get(attr_name, attr_name)
             
@@ -1298,28 +1334,72 @@ class SignalProcessApp(object):
             else:
                 value_str = str(attr_value)
             
-            # Add to text
-            attributes_text += f"{display_name}: {value_str}\n"
+            # Add to valid attributes list
+            valid_attributes.append((display_name, value_str))
         
-        # Set the text
-        self.f_sigattr.setText(attributes_text)
+        # Sort attributes alphabetically
+        valid_attributes.sort(key=lambda x: x[0])
+        
+        # Add rows to table
+        self.f_sigattr.setRowCount(len(valid_attributes))
+        for i, (name, value) in enumerate(valid_attributes):
+            name_item = QtWidgets.QTableWidgetItem(name)
+            value_item = QtWidgets.QTableWidgetItem(value)
+            
+            # Make cells read-only
+            name_item.setFlags(name_item.flags() & ~QtCore.Qt.ItemIsEditable)
+            value_item.setFlags(value_item.flags() & ~QtCore.Qt.ItemIsEditable)
+            
+            self.f_sigattr.setItem(i, 0, name_item)
+            self.f_sigattr.setItem(i, 1, value_item)
+        
+        # Adjust column widths
+        self.f_sigattr.resizeColumnsToContents()
 
     def display_signal_values(self, signal_obj):
-        """Display signal values in the text area"""
-        # Clear the text area
-        self.f_sigvalues.clear()
+        """Display signal values in a QTableWidget"""
+        # Clear the table
+        self.f_sigvalues.setRowCount(0)
         
-        # Format signal and time values as text
-        values_text = "WARTOŚCI SYGNAŁU:\n" + "="*50 + "\n\n"
-        values_text += "Indeks\tCzas [s]\t\tWartość\n"
-        values_text += "-"*50 + "\n"
+        # Check if signal is too large to display completely
+        # max_rows = 1000  # Limit for better performance
+        # if len(signal_obj.signal) > max_rows:
+        #     # Show warning
+        #     QtWidgets.QMessageBox.information(
+        #         None, 
+        #         "Duży sygnał", 
+        #         f"Sygnał zawiera {len(signal_obj.signal)} próbek. Wyświetlonych zostanie tylko {max_rows} pierwszych próbek."
+        #     )
+        #     show_samples = max_rows
+        # else:
+        show_samples = len(signal_obj.signal)
         
-        # Add each sample
-        for i, (t, v) in enumerate(zip(signal_obj.time, signal_obj.signal)):
-            values_text += f"{i}\t{t:.6f}\t\t{v:.6f}\n"
+        # Set table row count
+        self.f_sigvalues.setRowCount(show_samples)
         
-        # Set the text
-        self.f_sigvalues.setText(values_text)
+        # Populate table with signal values
+        for i in range(show_samples):
+            # Create table items
+            index_item = QtWidgets.QTableWidgetItem(str(i))
+            time_item = QtWidgets.QTableWidgetItem(f"{signal_obj.time[i]:.6f}")
+            value_item = QtWidgets.QTableWidgetItem(f"{signal_obj.signal[i]:.6f}")
+            
+            # Make cells read-only
+            index_item.setFlags(index_item.flags() & ~QtCore.Qt.ItemIsEditable)
+            time_item.setFlags(time_item.flags() & ~QtCore.Qt.ItemIsEditable)
+            value_item.setFlags(value_item.flags() & ~QtCore.Qt.ItemIsEditable)
+            
+            # Right align numeric values
+            time_item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+            value_item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+            
+            # Add items to table
+            self.f_sigvalues.setItem(i, 0, index_item)
+            self.f_sigvalues.setItem(i, 1, time_item)
+            self.f_sigvalues.setItem(i, 2, value_item)
+        
+        # Adjust column widths
+        self.f_sigvalues.resizeColumnsToContents()
 
     def plot_file_signal(self):
         """Plot the file signal"""
