@@ -214,7 +214,8 @@ class SignalOperations:
 
     @staticmethod
     def divide_signals(signal1, signal2):
-        epsilon = 1e-10
+        # TODO: different epsilon?
+        epsilon = 0.1
         new_signal = signal1.signal / (signal2.signal + epsilon)
         new_time = signal1.time
         new_sampling_rate = signal1.sampling_rate
