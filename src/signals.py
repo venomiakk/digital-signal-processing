@@ -41,6 +41,7 @@ class SignalGenerator:
     @staticmethod
     def gaussian_noise(A=1, t_start=0, d=2, sampling_rate=1000):
         # S2
+        #TODO: make amplitude A to be from -A to A
         t_end = t_start + d
 
         time = np.linspace(0, t_end, int(d * sampling_rate))
