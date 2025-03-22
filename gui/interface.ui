@@ -1,0 +1,935 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SignalProcessApp</class>
+ <widget class="QMainWindow" name="SignalProcessApp">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1715</width>
+    <height>910</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>1701</width>
+      <height>851</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="SignalTab">
+     <attribute name="title">
+      <string>Sygnał</string>
+     </attribute>
+     <widget class="QComboBox" name="comboBoxSignals">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>40</y>
+        <width>511</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <item>
+       <property name="text">
+        <string>Szum o rozkładzie jednostajnym</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Szum gaussowski</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał sinusoidalny</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał sinusoidalny wyprostowany jednopołówkowo</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał sinusoidalny wyprostowany dwupołówkowo</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał prostokątny</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał prostokątny symetryczny</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał trójkątny</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Skok jednostkowy</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Impuls jednostkowy</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Szum impulsowy</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QLabel" name="sig_label1">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>141</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Rodzaj sygnału</string>
+      </property>
+     </widget>
+     <widget class="QWidget" name="formLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>70</y>
+        <width>511</width>
+        <height>211</height>
+       </rect>
+      </property>
+      <layout class="QFormLayout" name="sig_formLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="amplitudaLabel">
+         <property name="text">
+          <string>Amplituda</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="amplitudaLineEdit"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="czasTrwaniaLabel">
+         <property name="text">
+          <string>Czas trwania [s]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="czasTrwaniaLineEdit"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="przesuniecieLabel">
+         <property name="text">
+          <string>Przesunięcie [s]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="przesuniecieLineEdit"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="samplingrateLabel">
+         <property name="text">
+          <string>Próbkowanie [próbki/s]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="samplingrateLineEdit"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="okresLabel">
+         <property name="text">
+          <string>Okres [s]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLineEdit" name="okresLineEdit"/>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="wypelnienieLabel">
+         <property name="text">
+          <string>Współczynnik wypełnienia</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLineEdit" name="wypelnienieLineEdit"/>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="numerProbkiLabel">
+         <property name="text">
+          <string>Numer próbki</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QLineEdit" name="numerProbkiLineEdit"/>
+       </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="prawdopodobienstwoLabel">
+         <property name="text">
+          <string>Prawdopodobieństwo</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QLineEdit" name="prawdopodobienstwoLineEdit"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QPushButton" name="sig_generate">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>300</y>
+        <width>111</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Wygeneruj sygnał</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="sig_save">
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>300</y>
+        <width>91</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Zapisz sygnał</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="sig_readfile">
+      <property name="geometry">
+       <rect>
+        <x>240</x>
+        <y>300</y>
+        <width>91</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Wczytaj z pliku</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="sig_label2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>330</y>
+        <width>151</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Liczba przediałów histogramu</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="sig_histbin">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>330</y>
+        <width>113</width>
+        <height>20</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QFrame" name="sig_plotframe">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>380</y>
+        <width>1661</width>
+        <height>411</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="OperationsTab">
+     <attribute name="title">
+      <string>Operacje</string>
+     </attribute>
+     <widget class="QWidget" name="formLayoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>150</y>
+        <width>261</width>
+        <height>131</height>
+       </rect>
+      </property>
+      <layout class="QFormLayout" name="op_formLayout_2">
+       <item row="0" column="0">
+        <widget class="QLabel" name="amplitudaLabel_2">
+         <property name="text">
+          <string>Amplituda</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="amplitudaLineEdit_2"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="okresLabel_2">
+         <property name="text">
+          <string>Okres [s]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="okresLineEdit_2"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="wypelnienieLabel_2">
+         <property name="text">
+          <string>Współczynnik wypełnienia</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="wypelnienieLineEdit_2"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="numerProbkiLabel_2">
+         <property name="text">
+          <string>Numer próbki</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="numerProbkiLineEdit_2"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="prawdopodobienstwoLabel_2">
+         <property name="text">
+          <string>Prawdopodobieństwo</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLineEdit" name="prawdopodobienstwoLineEdit_2"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QComboBox" name="comboBoxSignals_2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>110</y>
+        <width>381</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <item>
+       <property name="text">
+        <string>Szum o rozkładzie jednostajnym</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Szum gaussowski</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał sinusoidalny</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał sinusoidalny wyprostowany jednopołówkowo</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał sinusoidalny wyprostowany dwupołówkowo</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał prostokątny</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał prostokątny symetryczny</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał trójkątny</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Skok jednostkowy</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Impuls jednostkowy</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Szum impulsowy</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QComboBox" name="comboBoxSignals_3">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>350</y>
+        <width>391</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <item>
+       <property name="text">
+        <string>Szum o rozkładzie jednostajnym</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Szum gaussowski</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał sinusoidalny</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał sinusoidalny wyprostowany jednopołówkowo</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał sinusoidalny wyprostowany dwupołówkowo</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał prostokątny</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał prostokątny symetryczny</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Sygnał trójkątny</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Skok jednostkowy</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Impuls jednostkowy</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Szum impulsowy</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QLabel" name="op_label1">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>660</y>
+        <width>47</width>
+        <height>13</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Operacja</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBox">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>690</y>
+        <width>101</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <item>
+       <property name="text">
+        <string>Dodawanie</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Odejmowanie</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Mnożenie</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Dzielenie</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QPushButton" name="op_executeop">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>720</y>
+        <width>101</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Wykonaj operacje</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="op_saveop">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>750</y>
+        <width>101</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Zapisz wynik</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="op_generate_2">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>150</y>
+        <width>111</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Wygeneruj sygnał</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="op_readfile_2">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>250</y>
+        <width>111</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Wczytaj z pliku</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="op_save_2">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>200</y>
+        <width>111</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Zapisz sygnał</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="op_generate_3">
+      <property name="geometry">
+       <rect>
+        <x>300</x>
+        <y>390</y>
+        <width>111</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Wygeneruj sygnał</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="op_readfile_3">
+      <property name="geometry">
+       <rect>
+        <x>300</x>
+        <y>490</y>
+        <width>111</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Wczytaj z pliku</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="op_save_3">
+      <property name="geometry">
+       <rect>
+        <x>300</x>
+        <y>440</y>
+        <width>111</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Zapisz sygnał</string>
+      </property>
+     </widget>
+     <widget class="QFrame" name="op_framesig1">
+      <property name="geometry">
+       <rect>
+        <x>420</x>
+        <y>10</y>
+        <width>1261</width>
+        <height>271</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+     </widget>
+     <widget class="QWidget" name="formLayoutWidget_3">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>390</y>
+        <width>261</width>
+        <height>131</height>
+       </rect>
+      </property>
+      <layout class="QFormLayout" name="op_formLayout_3">
+       <item row="0" column="0">
+        <widget class="QLabel" name="amplitudaLabel_3">
+         <property name="text">
+          <string>Amplituda</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="amplitudaLineEdit_3"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="okresLabel_3">
+         <property name="text">
+          <string>Okres [s]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="okresLineEdit_3"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="wypelnienieLabel_3">
+         <property name="text">
+          <string>Współczynnik wypełnienia</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="wypelnienieLineEdit_3"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="numerProbkiLabel_3">
+         <property name="text">
+          <string>Numer próbki</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="numerProbkiLineEdit_3"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="prawdopodobienstwoLabel_3">
+         <property name="text">
+          <string>Prawdopodobieństwo</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLineEdit" name="prawdopodobienstwoLineEdit_3"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QFrame" name="op_framesig2">
+      <property name="geometry">
+       <rect>
+        <x>420</x>
+        <y>280</y>
+        <width>1261</width>
+        <height>271</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+     </widget>
+     <widget class="QFrame" name="op_frameop">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>550</y>
+        <width>1531</width>
+        <height>271</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+     </widget>
+     <widget class="QWidget" name="formLayoutWidget_4">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>371</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="op_czasTrwaniaLabel1">
+         <property name="text">
+          <string>Czas trwania [s]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="op_czasTrwaniaLineEdit1"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="op_przesuniecieLabel1">
+         <property name="text">
+          <string>Przesunięcie [s]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="op_przesuniecieLineEdit1"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="op_samplingrateLabel1">
+         <property name="text">
+          <string>Próbkowanie [próbki/s]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="op_samplingrateLineEdit1"/>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="FileTab">
+     <attribute name="title">
+      <string>Pliki</string>
+     </attribute>
+     <widget class="QPushButton" name="f_loadfile">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>131</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Wczytaj sygnał z pliku</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="f_label1">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>60</y>
+        <width>121</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Atrybuty sygnału</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="f_label2">
+      <property name="geometry">
+       <rect>
+        <x>440</x>
+        <y>60</y>
+        <width>121</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Wartości sygnału</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="f_label3">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>380</y>
+        <width>151</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Liczba przediałów histogramu</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="f_histbin">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>380</y>
+        <width>113</width>
+        <height>20</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="f_refreshplot">
+      <property name="geometry">
+       <rect>
+        <x>310</x>
+        <y>380</y>
+        <width>131</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Odśwież wykres</string>
+      </property>
+     </widget>
+     <widget class="QFrame" name="f_frame">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>420</y>
+        <width>1571</width>
+        <height>391</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+     </widget>
+     <widget class="QTableWidget" name="f_sigattr">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>90</y>
+        <width>391</width>
+        <height>241</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text">
+        <string>Atrybut</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Wartość</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QTableWidget" name="f_sigvalues">
+      <property name="geometry">
+       <rect>
+        <x>440</x>
+        <y>90</y>
+        <width>391</width>
+        <height>241</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text">
+        <string>Indeks</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Czas [s]</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Wartość</string>
+       </property>
+      </column>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1715</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

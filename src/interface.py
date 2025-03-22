@@ -14,7 +14,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from signals import SignalGenerator, SignalObject, SignalOperations
-from plots import plot_signal, plot_points
+# from plots import plot_signal, plot_points
 import os
 
 

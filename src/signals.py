@@ -48,7 +48,10 @@ class SignalGenerator:
         signal = np.random.normal(0, 1, len(time))
         minS = np.min(signal)
         maxS = np.max(signal)
-        signal = A * (signal - minS) / (maxS - minS)
+        for i in range(len(signal)):
+            signal[i] = (signal[i] - minS) / (maxS - minS)
+            signal[i] = 2 * (signal[i] - 0.5)
+        signal = A * signal
         sigObj = SignalObject(signal, time, sampling_rate, A=A, t_start=t_start, d=d)
         return sigObj
 
