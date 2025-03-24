@@ -353,12 +353,10 @@ class SignalProcessApp(object):
         SignalProcessApp.setStatusBar(self.statusbar)
 
         #! CONTROLS
-        # Signal tab buttons
         self.sig_generate.clicked.connect(self.generate_and_plot_signal)
         self.sig_save.clicked.connect(self.save_signal)
         self.sig_readfile.clicked.connect(self.load_signal_from_file)
         
-        # Operations tab buttons
         self.op_generate_2.clicked.connect(self.generate_and_plot_signal1)
         self.op_save_2.clicked.connect(self.save_signal1)
         self.op_readfile_2.clicked.connect(self.load_signal1)
@@ -370,12 +368,10 @@ class SignalProcessApp(object):
         self.op_executeop.clicked.connect(self.execute_operation)
         self.op_saveop.clicked.connect(self.save_operation_result)
         
-        # Connect combo boxes to update enabled fields
         self.comboBoxSignals.currentIndexChanged.connect(self.update_enabled_fields)
         self.comboBoxSignals_2.currentIndexChanged.connect(self.update_enabled_fields_signal1)
         self.comboBoxSignals_3.currentIndexChanged.connect(self.update_enabled_fields_signal2)
         
-        # Initialize plot frames
         self.setup_plot_frame()
         self.setup_operations_frames()
         
@@ -384,24 +380,15 @@ class SignalProcessApp(object):
         QtCore.QMetaObject.connectSlotsByName(SignalProcessApp)
         
         #! CONTROLS
-        # Initialize enabled fields
         self.update_enabled_fields()
         self.update_enabled_fields_signal1()
         self.update_enabled_fields_signal2()
-        
-        # Set default values
+
         self.set_default_values()
 
-        # File tab buttons
         self.f_loadfile.clicked.connect(self.load_file_signal)
         self.f_refreshplot.clicked.connect(self.refresh_file_plot)
-        
-        # Make tables read-only (instead of TextEdits)
-        # Remove these lines:
-        # self.f_sigattr.setReadOnly(True) 
-        # self.f_sigvalues.setReadOnly(True)
-        
-        # Initialize the file tab plot frame
+
         self.setup_file_frame()
 
     def retranslateUi(self, SignalProcessApp):
@@ -499,31 +486,21 @@ class SignalProcessApp(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.FileTab), _translate("SignalProcessApp", "Pliki"))
     
     def setup_plot_frame(self):
-        """Set up the plot frame with a matplotlib canvas"""
-        # Create layout for the plot frame
         self.sig_plot_layout = QtWidgets.QVBoxLayout(self.sig_plotframe)
-        
-        # Create a matplotlib figure
+
         self.figure = Figure(figsize=(9, 4))
-        
-        # Create canvas to hold the figure and add to layout
+
         self.canvas = FigureCanvas(self.figure)
         self.sig_plot_layout.addWidget(self.canvas)
         
-        # Add initial empty plot
         self.figure.clear()
-        # self.figure.suptitle("Wygeneruj sygnał aby zobaczyć wykres")
         self.canvas.draw()
-        
-        # Create attribute to store current signal
+
         self.current_signal = None
 
     def generate_and_plot_signal(self):
-        """Generate signal from form data and plot it"""
-        # Get signal type from combobox
         signal_type = self.comboBoxSignals.currentText()
-        
-        # Get parameters from form fields
+
         try:
             amplitude = float(self.amplitudaLineEdit.text()) if self.amplitudaLineEdit.text() else 1
             duration = float(self.czasTrwaniaLineEdit.text()) if self.czasTrwaniaLineEdit.text() else 2
@@ -534,17 +511,14 @@ class SignalProcessApp(object):
             sample_num = int(self.numerProbkiLineEdit.text()) if self.numerProbkiLineEdit.text() else 10
             probability = float(self.prawdopodobienstwoLineEdit.text()) if self.prawdopodobienstwoLineEdit.text() else 0.5
         except ValueError:
-            # Show error if conversion fails
             QtWidgets.QMessageBox.critical(None, "Błąd", "Wprowadź poprawne wartości numeryczne.")
             return
-        
-        # Get histogram bins
+
         try:
             bins = int(self.sig_histbin.text()) if self.sig_histbin.text() else 20
         except ValueError:
             bins = 20
-        
-        # Generate the appropriate signal based on type
+
         if signal_type == "Szum o rozkładzie jednostajnym":
             signal_obj = SignalGenerator.uniformly_distributed_noise(A=amplitude, t_start=t_shift, d=duration, sampling_rate=sampling_rate)
         elif signal_type == "Szum gaussowski":
@@ -568,29 +542,22 @@ class SignalProcessApp(object):
         elif signal_type == "Szum impulsowy":
             signal_obj = SignalGenerator.impulse_noise(A=amplitude, t_start=t_shift, d=duration, sampling_rate=sampling_rate, p=probability)
         
-        # Store the signal
         self.current_signal = signal_obj
-        
-        # Plot the signal
+
         self.plot_signal(signal_obj, bins)
 
     def plot_signal(self, signal_obj, bins=20):
-        """Plot a signal on the canvas"""
         if not signal_obj:
             return
-        
-        # Clear the figure
+
         self.figure.clear()
-        
-        # Create a gridspec layout to allocate space for stats on the right
+
         from matplotlib import gridspec
-        gs = gridspec.GridSpec(1, 3, width_ratios=[3, 3, 0.5])  # Signal, Histogram, Stats
-        
-        # Create subplots using the gridspec
-        ax1 = self.figure.add_subplot(gs[0])  # Left plot (signal)
-        ax2 = self.figure.add_subplot(gs[1])  # Middle plot (histogram)
-        
-        # Plot signal on left subplot
+        gs = gridspec.GridSpec(1, 3, width_ratios=[3, 3, 0.5])
+
+        ax1 = self.figure.add_subplot(gs[0])
+        ax2 = self.figure.add_subplot(gs[1])
+
         ax1.grid(True)
         ax1.axhline(y=0, color='k', linewidth=1.5, alpha=0.3)
         
@@ -602,14 +569,12 @@ class SignalProcessApp(object):
         ax1.set_xlabel("Czas [s]")
         ax1.set_ylabel("Amplituda")
         ax1.set_title("Sygnał")
-        
-        # Plot histogram on middle subplot
+
         ax2.hist(signal_obj.signal, bins=bins)
         ax2.set_title("Histogram")
         ax2.set_xlabel("Amplituda")
         ax2.set_ylabel("Częstość")
-        
-        # Create stats text
+
         stats_text = "Statystyki sygnału:\n\n"
         stats_text += f"Wartość średnia:\n{signal_obj.mean_value:.4f}\n\n"
         stats_text += f"Średnia wartość bezwzględna:\n{signal_obj.abs_mean_value:.4f}\n\n"
@@ -617,24 +582,20 @@ class SignalProcessApp(object):
         stats_text += f"Wariancja:\n{signal_obj.variance:.4f}\n\n"
         stats_text += f"Średnia moc sygnału:\n{signal_obj.avg_power:.4f}"
         
-        # Create a text box for stats in the right area
         stats_ax = self.figure.add_subplot(gs[2])
-        stats_ax.axis('off')  # Hide axis
+        stats_ax.axis('off')
         stats_ax.text(0.05, 0.5, stats_text, 
                     va='center', ha='left',
                     bbox=dict(boxstyle='round', facecolor='whitesmoke', alpha=0.5))
         
-        # Adjust layout and draw
         self.figure.tight_layout()
         self.canvas.draw()
 
     def save_signal(self):
-        """Save the current signal to a file"""
         if not hasattr(self, 'current_signal') or self.current_signal is None:
             QtWidgets.QMessageBox.warning(None, "Ostrzeżenie", "Brak sygnału do zapisania.")
             return
-        
-        # Open file dialog
+
         options = QtWidgets.QFileDialog.Options()
         file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
             None, "Zapisz sygnał", "", "Pickle Files (*.pkl);;All Files (*)", 
@@ -642,11 +603,9 @@ class SignalProcessApp(object):
         )
         
         if file_path:
-            # Add .pkl extension if not present
             if not file_path.endswith('.pkl'):
                 file_path += '.pkl'
-                
-            # Save using pickle
+
             import pickle
             try:
                 with open(file_path, 'wb') as f:
@@ -656,8 +615,6 @@ class SignalProcessApp(object):
                 QtWidgets.QMessageBox.critical(None, "Błąd", f"Nie udało się zapisać pliku: {str(e)}")
 
     def load_signal_from_file(self):
-        """Load signal from a file"""
-        # Open file dialog
         options = QtWidgets.QFileDialog.Options()
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
             None, "Wczytaj sygnał", "", "Pickle Files (*.pkl);;All Files (*)", 
@@ -665,27 +622,22 @@ class SignalProcessApp(object):
         )
         
         if file_path:
-            # Load using pickle
             import pickle
             try:
                 with open(file_path, 'rb') as f:
                     signal_obj = pickle.load(f)
-                    
-                # Make sure it's a SignalObject
+
                 if not isinstance(signal_obj, SignalObject):
                     QtWidgets.QMessageBox.critical(None, "Błąd", "Plik nie zawiera obiektu sygnału.")
                     return
-                    
-                # Store and plot the signal
+
                 self.current_signal = signal_obj
-                
-                # Get histogram bins
+
                 try:
                     bins = int(self.sig_histbin.text()) if self.sig_histbin.text() else 20
                 except ValueError:
                     bins = 20
-                    
-                # Plot the signal
+
                 self.plot_signal(signal_obj, bins)
                 
                 QtWidgets.QMessageBox.information(None, "Sukces", f"Sygnał wczytany z {file_path}")
@@ -693,10 +645,8 @@ class SignalProcessApp(object):
                 QtWidgets.QMessageBox.critical(None, "Błąd", f"Nie udało się wczytać pliku: {str(e)}")
 
     def update_enabled_fields(self):
-        """Enable or disable input fields based on selected signal type"""
         signal_type = self.comboBoxSignals.currentText()
-        
-        # Create a mapping of which parameters are needed for each signal type
+
         param_mapping = {
             "Szum o rozkładzie jednostajnym": ["amplituda", "czasTrwania", "przesuniecie", "samplingrate"],
             "Szum gaussowski": ["amplituda", "czasTrwania", "przesuniecie", "samplingrate"],
@@ -710,11 +660,9 @@ class SignalProcessApp(object):
             "Impuls jednostkowy": ["amplituda", "czasTrwania", "przesuniecie", "samplingrate", "numerProbki"],
             "Szum impulsowy": ["amplituda", "czasTrwania", "przesuniecie", "samplingrate", "prawdopodobienstwo"]
         }
-        
-        # Get the list of needed parameters for the selected signal
+
         needed_params = param_mapping.get(signal_type, [])
-        
-        # Enable/disable fields based on the needed parameters
+
         self.amplitudaLineEdit.setEnabled("amplituda" in needed_params)
         self.czasTrwaniaLineEdit.setEnabled("czasTrwania" in needed_params)
         self.przesuniecieLineEdit.setEnabled("przesuniecie" in needed_params)
@@ -723,8 +671,7 @@ class SignalProcessApp(object):
         self.wypelnienieLineEdit.setEnabled("wypelnienie" in needed_params)
         self.numerProbkiLineEdit.setEnabled("numerProbki" in needed_params)
         self.prawdopodobienstwoLineEdit.setEnabled("prawdopodobienstwo" in needed_params)
-        
-        # Clear disabled fields
+
         if not self.amplitudaLineEdit.isEnabled():
             self.amplitudaLineEdit.clear()
         if not self.czasTrwaniaLineEdit.isEnabled():
@@ -743,33 +690,26 @@ class SignalProcessApp(object):
             self.prawdopodobienstwoLineEdit.clear()
 
     def setup_operations_frames(self):
-        """Set up the plot frames for operations tab"""
-        # Setup signal 1 frame
         self.op_plot_layout1 = QtWidgets.QVBoxLayout(self.op_framesig1)
         self.figure_signal1 = Figure(figsize=(8, 3))
         self.canvas_signal1 = FigureCanvas(self.figure_signal1)
         self.op_plot_layout1.addWidget(self.canvas_signal1)
-        
-        # Setup signal 2 frame
+
         self.op_plot_layout2 = QtWidgets.QVBoxLayout(self.op_framesig2)
         self.figure_signal2 = Figure(figsize=(8, 3))
         self.canvas_signal2 = FigureCanvas(self.figure_signal2)
         self.op_plot_layout2.addWidget(self.canvas_signal2)
-        
-        # Setup operation result frame
+
         self.op_plot_layout_result = QtWidgets.QVBoxLayout(self.op_frameop)
         self.figure_result = Figure(figsize=(8, 3))
         self.canvas_result = FigureCanvas(self.figure_result)
         self.op_plot_layout_result.addWidget(self.canvas_result)
-        
-        # Create attributes to store signals
+
         self.signal1 = None
         self.signal2 = None
         self.result_signal = None
 
     def set_default_values(self):
-        """Set default values for input fields"""
-        # Signal tab defaults
         self.amplitudaLineEdit.setText("1")
         self.czasTrwaniaLineEdit.setText("2")
         self.przesuniecieLineEdit.setText("0")
@@ -779,8 +719,7 @@ class SignalProcessApp(object):
         self.numerProbkiLineEdit.setText("10")
         self.prawdopodobienstwoLineEdit.setText("0.5")
         self.sig_histbin.setText("20")
-        
-        # Operations tab defaults
+
         self.op_czasTrwaniaLineEdit1.setText("2")
         self.op_przesuniecieLineEdit1.setText("0")
         self.op_samplingrateLineEdit1.setText("1000")
@@ -798,10 +737,8 @@ class SignalProcessApp(object):
         self.prawdopodobienstwoLineEdit_3.setText("0.5")
 
     def update_enabled_fields_signal1(self):
-        """Enable or disable input fields based on selected signal 1 type"""
         signal_type = self.comboBoxSignals_2.currentText()
         
-        # Create a mapping of which parameters are needed for each signal type
         param_mapping = {
             "Szum o rozkładzie jednostajnym": ["amplituda"],
             "Szum gaussowski": ["amplituda"],
@@ -815,18 +752,15 @@ class SignalProcessApp(object):
             "Impuls jednostkowy": ["amplituda", "numerProbki"],
             "Szum impulsowy": ["amplituda", "prawdopodobienstwo"]
         }
-        
-        # Get the list of needed parameters for the selected signal
+
         needed_params = param_mapping.get(signal_type, [])
-        
-        # Enable/disable fields based on the needed parameters
+
         self.amplitudaLineEdit_2.setEnabled("amplituda" in needed_params)
         self.okresLineEdit_2.setEnabled("okres" in needed_params)
         self.wypelnienieLineEdit_2.setEnabled("wypelnienie" in needed_params)
         self.numerProbkiLineEdit_2.setEnabled("numerProbki" in needed_params)
         self.prawdopodobienstwoLineEdit_2.setEnabled("prawdopodobienstwo" in needed_params)
         
-        # Clear disabled fields
         if not self.amplitudaLineEdit_2.isEnabled():
             self.amplitudaLineEdit_2.clear()
         if not self.okresLineEdit_2.isEnabled():
@@ -839,10 +773,8 @@ class SignalProcessApp(object):
             self.prawdopodobienstwoLineEdit_2.clear()
 
     def update_enabled_fields_signal2(self):
-        """Enable or disable input fields based on selected signal 2 type"""
         signal_type = self.comboBoxSignals_3.currentText()
         
-        # Create a mapping of which parameters are needed for each signal type
         param_mapping = {
             "Szum o rozkładzie jednostajnym": ["amplituda"],
             "Szum gaussowski": ["amplituda"],
@@ -857,17 +789,14 @@ class SignalProcessApp(object):
             "Szum impulsowy": ["amplituda", "prawdopodobienstwo"]
         }
         
-        # Get the list of needed parameters for the selected signal
         needed_params = param_mapping.get(signal_type, [])
         
-        # Enable/disable fields based on the needed parameters
         self.amplitudaLineEdit_3.setEnabled("amplituda" in needed_params)
         self.okresLineEdit_3.setEnabled("okres" in needed_params)
         self.wypelnienieLineEdit_3.setEnabled("wypelnienie" in needed_params)
         self.numerProbkiLineEdit_3.setEnabled("numerProbki" in needed_params)
         self.prawdopodobienstwoLineEdit_3.setEnabled("prawdopodobienstwo" in needed_params)
-        
-        # Clear disabled fields
+
         if not self.amplitudaLineEdit_3.isEnabled():
             self.amplitudaLineEdit_3.clear()
         if not self.okresLineEdit_3.isEnabled():
@@ -880,8 +809,6 @@ class SignalProcessApp(object):
             self.prawdopodobienstwoLineEdit_3.clear()
 
     def generate_and_plot_signal1(self):
-        """Generate and plot signal 1 for operations"""
-        # Get common parameters
         try:
             duration = float(self.op_czasTrwaniaLineEdit1.text()) if self.op_czasTrwaniaLineEdit1.text() else 2
             t_shift = float(self.op_przesuniecieLineEdit1.text()) if self.op_przesuniecieLineEdit1.text() else 0
@@ -889,8 +816,7 @@ class SignalProcessApp(object):
         except ValueError:
             QtWidgets.QMessageBox.critical(None, "Błąd", "Wprowadź poprawne wartości numeryczne dla parametrów wspólnych.")
             return
-        
-        # Get signal type and specific parameters
+
         signal_type = self.comboBoxSignals_2.currentText()
         
         try:
@@ -902,8 +828,7 @@ class SignalProcessApp(object):
         except ValueError:
             QtWidgets.QMessageBox.critical(None, "Błąd", "Wprowadź poprawne wartości numeryczne.")
             return
-        
-        # Generate the appropriate signal based on type
+
         if signal_type == "Szum o rozkładzie jednostajnym":
             signal_obj = SignalGenerator.uniformly_distributed_noise(A=amplitude, t_start=t_shift, d=duration, sampling_rate=sampling_rate)
         elif signal_type == "Szum gaussowski":
@@ -927,15 +852,11 @@ class SignalProcessApp(object):
         elif signal_type == "Szum impulsowy":
             signal_obj = SignalGenerator.impulse_noise(A=amplitude, t_start=t_shift, d=duration, sampling_rate=sampling_rate, p=probability)
         
-        # Store the signal
         self.signal1 = signal_obj
         
-        # Plot the signal
         self.plot_operation_signal(signal_obj, self.figure_signal1, self.canvas_signal1)
 
     def generate_and_plot_signal2(self):
-        """Generate and plot signal 2 for operations"""
-        # Get common parameters
         try:
             duration = float(self.op_czasTrwaniaLineEdit1.text()) if self.op_czasTrwaniaLineEdit1.text() else 2
             t_shift = float(self.op_przesuniecieLineEdit1.text()) if self.op_przesuniecieLineEdit1.text() else 0
@@ -943,8 +864,7 @@ class SignalProcessApp(object):
         except ValueError:
             QtWidgets.QMessageBox.critical(None, "Błąd", "Wprowadź poprawne wartości numeryczne dla parametrów wspólnych.")
             return
-        
-        # Get signal type and specific parameters
+
         signal_type = self.comboBoxSignals_3.currentText()
         
         try:
@@ -957,7 +877,6 @@ class SignalProcessApp(object):
             QtWidgets.QMessageBox.critical(None, "Błąd", "Wprowadź poprawne wartości numeryczne.")
             return
         
-        # Generate the appropriate signal based on type
         if signal_type == "Szum o rozkładzie jednostajnym":
             signal_obj = SignalGenerator.uniformly_distributed_noise(A=amplitude, t_start=t_shift, d=duration, sampling_rate=sampling_rate)
         elif signal_type == "Szum gaussowski":
@@ -981,28 +900,21 @@ class SignalProcessApp(object):
         elif signal_type == "Szum impulsowy":
             signal_obj = SignalGenerator.impulse_noise(A=amplitude, t_start=t_shift, d=duration, sampling_rate=sampling_rate, p=probability)
         
-        # Store the signal
         self.signal2 = signal_obj
         
-        # Plot the signal
         self.plot_operation_signal(signal_obj, self.figure_signal2, self.canvas_signal2)
 
     def plot_operation_signal(self, signal_obj, figure, canvas):
-        """Plot a signal for the operations tab"""
         if not signal_obj:
             return
-        
-        # Clear the figure
+
         figure.clear()
-        
-        # Create a gridspec layout with 1 row and 2 columns
+
         from matplotlib import gridspec
-        gs = gridspec.GridSpec(1, 2, width_ratios=[2, 1])  # Signal, Stats
+        gs = gridspec.GridSpec(1, 2, width_ratios=[2, 1]) 
         
-        # Create subplots using the gridspec
-        ax1 = figure.add_subplot(gs[0])  # Left plot (signal)
-        
-        # Plot signal on left subplot
+        ax1 = figure.add_subplot(gs[0]) 
+
         ax1.grid(True)
         ax1.axhline(y=0, color='k', linewidth=1.5, alpha=0.3)
         
@@ -1014,29 +926,25 @@ class SignalProcessApp(object):
         ax1.set_xlabel("Czas [s]")
         ax1.set_ylabel("Amplituda")
         ax1.set_title("Sygnał")
-        
-        # Create stats text
+
         stats_text = "Statystyki:\n\n"
         stats_text += f"Średnia: {signal_obj.mean_value:.4f}\n"
         stats_text += f"Średnia |x|: {signal_obj.abs_mean_value:.4f}\n"
         stats_text += f"RMS: {signal_obj.rms_value:.4f}\n"
         stats_text += f"Wariancja: {signal_obj.variance:.4f}\n"
         stats_text += f"Moc: {signal_obj.avg_power:.4f}"
-        
-        # Create a text box for stats in the right area
+
         stats_ax = figure.add_subplot(gs[1])
-        stats_ax.axis('off')  # Hide axis
+        stats_ax.axis('off') 
         stats_ax.text(0.05, 0.5, stats_text, 
                     va='center', ha='left',
                     bbox=dict(boxstyle='round', facecolor='whitesmoke', alpha=0.5))
         
-        # Adjust layout and draw
+
         figure.tight_layout()
         canvas.draw()
 
     def execute_operation(self):
-        """Execute the selected operation on the two signals"""
-        # Check if both signals are available
         if not hasattr(self, 'signal1') or self.signal1 is None:
             QtWidgets.QMessageBox.warning(None, "Brak sygnału 1", "Wygeneruj lub wczytaj sygnał 1.")
             return
@@ -1045,10 +953,8 @@ class SignalProcessApp(object):
             QtWidgets.QMessageBox.warning(None, "Brak sygnału 2", "Wygeneruj lub wczytaj sygnał 2.")
             return
         
-        # Get the selected operation
         operation = self.comboBox.currentText()
-        
-        # Perform the operation
+
         if operation == "Dodawanie":
             result = SignalOperations.add_signals(self.signal1, self.signal2)
         elif operation == "Odejmowanie":
@@ -1061,29 +967,23 @@ class SignalProcessApp(object):
             QtWidgets.QMessageBox.critical(None, "Błąd", "Nieznana operacja.")
             return
         
-        # Store the result
         self.result_signal = result
         
-        # Plot the result
         self.plot_result_signal(result)
 
     def plot_result_signal(self, signal_obj):
         """Plot the result signal from an operation"""
         if not signal_obj:
             return
-        
-        # Clear the figure
+
         self.figure_result.clear()
-        
-        # Create a gridspec layout
+
         from matplotlib import gridspec
-        gs = gridspec.GridSpec(1, 3, width_ratios=[2, 2, 1])  # Signal, Histogram, Stats
-        
-        # Create subplots using the gridspec
-        ax1 = self.figure_result.add_subplot(gs[0])  # Signal
-        ax2 = self.figure_result.add_subplot(gs[1])  # Histogram
-        
-        # Plot signal
+        gs = gridspec.GridSpec(1, 3, width_ratios=[2, 2, 1])
+
+        ax1 = self.figure_result.add_subplot(gs[0])
+        ax2 = self.figure_result.add_subplot(gs[1])
+
         ax1.grid(True)
         ax1.axhline(y=0, color='k', linewidth=1.5, alpha=0.3)
         
@@ -1095,19 +995,16 @@ class SignalProcessApp(object):
         ax1.set_xlabel("Czas [s]")
         ax1.set_ylabel("Amplituda")
         ax1.set_title("Wynik operacji")
-        
-        # Plot histogram
+
         try:
-            bins = 20  # Fixed number of bins for result histogram
+            bins = 20 
             ax2.hist(signal_obj.signal, bins=bins)
             ax2.set_title("Histogram")
             ax2.set_xlabel("Amplituda")
             ax2.set_ylabel("Częstość")
         except Exception:
-            # In case histogram fails (e.g., with NaN values)
             pass
         
-        # Create stats text
         stats_text = "Statystyki:\n\n"
         stats_text += f"Średnia: {signal_obj.mean_value:.4f}\n"
         stats_text += f"Średnia |x|: {signal_obj.abs_mean_value:.4f}\n"
@@ -1115,19 +1012,17 @@ class SignalProcessApp(object):
         stats_text += f"Wariancja: {signal_obj.variance:.4f}\n"
         stats_text += f"Moc: {signal_obj.avg_power:.4f}"
         
-        # Create a text box for stats
         stats_ax = self.figure_result.add_subplot(gs[2])
         stats_ax.axis('off')
         stats_ax.text(0.05, 0.5, stats_text, 
                     va='center', ha='left',
                     bbox=dict(boxstyle='round', facecolor='whitesmoke', alpha=0.5))
         
-        # Adjust layout and draw
+
         self.figure_result.tight_layout()
         self.canvas_result.draw()
 
     def save_signal1(self):
-        """Save signal 1 to file"""
         if not hasattr(self, 'signal1') or self.signal1 is None:
             QtWidgets.QMessageBox.warning(None, "Ostrzeżenie", "Brak sygnału 1 do zapisania.")
             return
@@ -1135,7 +1030,6 @@ class SignalProcessApp(object):
         self._save_signal_to_file(self.signal1)
 
     def save_signal2(self):
-        """Save signal 2 to file"""
         if not hasattr(self, 'signal2') or self.signal2 is None:
             QtWidgets.QMessageBox.warning(None, "Ostrzeżenie", "Brak sygnału 2 do zapisania.")
             return
@@ -1143,7 +1037,6 @@ class SignalProcessApp(object):
         self._save_signal_to_file(self.signal2)
 
     def save_operation_result(self):
-        """Save the operation result signal to file"""
         if not hasattr(self, 'result_signal') or self.result_signal is None:
             QtWidgets.QMessageBox.warning(None, "Ostrzeżenie", "Brak sygnału wynikowego do zapisania.")
             return
@@ -1151,8 +1044,6 @@ class SignalProcessApp(object):
         self._save_signal_to_file(self.result_signal)
 
     def _save_signal_to_file(self, signal_obj):
-        """Internal method to save a signal to file"""
-        # Open file dialog
         options = QtWidgets.QFileDialog.Options()
         file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
             None, "Zapisz sygnał", "", "Pickle Files (*.pkl);;All Files (*)", 
@@ -1160,11 +1051,9 @@ class SignalProcessApp(object):
         )
         
         if file_path:
-            # Add .pkl extension if not present
             if not file_path.endswith('.pkl'):
                 file_path += '.pkl'
                 
-            # Save using pickle
             import pickle
             try:
                 with open(file_path, 'wb') as f:
@@ -1174,22 +1063,18 @@ class SignalProcessApp(object):
                 QtWidgets.QMessageBox.critical(None, "Błąd", f"Nie udało się zapisać pliku: {str(e)}")
 
     def load_signal1(self):
-        """Load signal 1 from file"""
         signal_obj = self._load_signal_from_file()
         if signal_obj:
             self.signal1 = signal_obj
             self.plot_operation_signal(signal_obj, self.figure_signal1, self.canvas_signal1)
 
     def load_signal2(self):
-        """Load signal 2 from file"""
         signal_obj = self._load_signal_from_file()
         if signal_obj:
             self.signal2 = signal_obj
             self.plot_operation_signal(signal_obj, self.figure_signal2, self.canvas_signal2)
 
     def _load_signal_from_file(self):
-        """Internal method to load a signal from file"""
-        # Open file dialog
         options = QtWidgets.QFileDialog.Options()
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
             None, "Wczytaj sygnał", "", "Pickle Files (*.pkl);;All Files (*)", 
@@ -1197,13 +1082,11 @@ class SignalProcessApp(object):
         )
         
         if file_path:
-            # Load using pickle
             import pickle
             try:
                 with open(file_path, 'rb') as f:
                     signal_obj = pickle.load(f)
-                    
-                # Make sure it's a SignalObject
+
                 if not isinstance(signal_obj, SignalObject):
                     QtWidgets.QMessageBox.critical(None, "Błąd", "Plik nie zawiera obiektu sygnału.")
                     return None
@@ -1217,32 +1100,25 @@ class SignalProcessApp(object):
         return None
 
     def setup_file_frame(self):
-        """Set up the plot frame for the file tab"""
-        # Create layout for the file plot frame
+
         self.f_plot_layout = QtWidgets.QVBoxLayout(self.f_frame)
         
-        # Create a matplotlib figure
         self.file_figure = Figure(figsize=(9, 4))
-        
-        # Create canvas to hold the figure and add to layout
+
         self.file_canvas = FigureCanvas(self.file_figure)
         self.f_plot_layout.addWidget(self.file_canvas)
-        
-        # Add initial empty plot
+
         self.file_figure.clear()
         self.file_canvas.draw()
-        
-        # Create attribute to store current file signal
+
         self.file_signal = None
-        
-        # Configure tables to be read-only
+
         self.f_sigattr.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.f_sigattr.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         
         self.f_sigvalues.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.f_sigvalues.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        
-        # Set headers to stretch
+
         self.f_sigattr.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
         self.f_sigattr.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
         
@@ -1251,8 +1127,6 @@ class SignalProcessApp(object):
         self.f_sigvalues.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
 
     def load_file_signal(self):
-        """Load signal from file for the file tab"""
-        # Open file dialog
         options = QtWidgets.QFileDialog.Options()
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
             None, "Wczytaj sygnał", "", "Pickle Files (*.pkl);;All Files (*)", 
@@ -1261,21 +1135,16 @@ class SignalProcessApp(object):
         
         if file_path:
             try:
-                # Import here to avoid circular imports
                 from filesRW import FileRW
                 
-                # Load signal from file
                 signal_obj = FileRW.read_signal_from_file(file_path)
                 
                 if signal_obj:
-                    # Store the signal
                     self.file_signal = signal_obj
                     
-                    # Display signal attributes and values in tables
                     self.display_signal_attributes(signal_obj)
                     self.display_signal_values(signal_obj)
                     
-                    # Plot the signal
                     self.plot_file_signal()
                     
                     QtWidgets.QMessageBox.information(None, "Sukces", f"Sygnał wczytany z {file_path}")
@@ -1285,8 +1154,6 @@ class SignalProcessApp(object):
                 QtWidgets.QMessageBox.critical(None, "Błąd", f"Nie udało się wczytać pliku: {str(e)}")
 
     def display_signal_attributes(self, signal_obj):
-        """Display signal attributes in a QTableWidget"""
-        # Create a mapping from technical names to human-readable names
         attr_name_mapping = {
             'A': 'Amplituda',
             'T': 'Okres [s]',
@@ -1305,128 +1172,91 @@ class SignalProcessApp(object):
             'avg_power': 'Średnia moc sygnału'
         }
         
-        # Clear the table
         self.f_sigattr.setRowCount(0)
-        
-        # Get all attributes that are not None and are not signal/time
+
         valid_attributes = []
         for attr_name in dir(signal_obj):
-            # Skip private attributes, methods, and signal/time
             if (attr_name.startswith('_') or 
                 callable(getattr(signal_obj, attr_name)) or 
                 attr_name in ['signal', 'time']):
                 continue
             
             attr_value = getattr(signal_obj, attr_name)
-            
-            # Skip None values
+
             if attr_value is None:
                 continue
-                
-            # Get human-readable name or use original if not in mapping
+
             display_name = attr_name_mapping.get(attr_name, attr_name)
-            
-            # Format the value based on type
+
             if isinstance(attr_value, bool):
                 value_str = "Tak" if attr_value else "Nie"
             elif isinstance(attr_value, (int, float)):
-                value_str = f"{attr_value:.6g}"  # Format numbers nicely
+                value_str = f"{attr_value:.6g}"
             else:
                 value_str = str(attr_value)
-            
-            # Add to valid attributes list
+
             valid_attributes.append((display_name, value_str))
-        
-        # Sort attributes alphabetically
+
         valid_attributes.sort(key=lambda x: x[0])
-        
-        # Add rows to table
+
         self.f_sigattr.setRowCount(len(valid_attributes))
         for i, (name, value) in enumerate(valid_attributes):
             name_item = QtWidgets.QTableWidgetItem(name)
             value_item = QtWidgets.QTableWidgetItem(value)
-            
-            # Make cells read-only
+
             name_item.setFlags(name_item.flags() & ~QtCore.Qt.ItemIsEditable)
             value_item.setFlags(value_item.flags() & ~QtCore.Qt.ItemIsEditable)
             
             self.f_sigattr.setItem(i, 0, name_item)
             self.f_sigattr.setItem(i, 1, value_item)
-        
-        # Adjust column widths
+
         self.f_sigattr.resizeColumnsToContents()
 
     def display_signal_values(self, signal_obj):
-        """Display signal values in a QTableWidget"""
-        # Clear the table
+
         self.f_sigvalues.setRowCount(0)
-        
-        # Check if signal is too large to display completely
-        # max_rows = 1000  # Limit for better performance
-        # if len(signal_obj.signal) > max_rows:
-        #     # Show warning
-        #     QtWidgets.QMessageBox.information(
-        #         None, 
-        #         "Duży sygnał", 
-        #         f"Sygnał zawiera {len(signal_obj.signal)} próbek. Wyświetlonych zostanie tylko {max_rows} pierwszych próbek."
-        #     )
-        #     show_samples = max_rows
-        # else:
+
         show_samples = len(signal_obj.signal)
         
-        # Set table row count
         self.f_sigvalues.setRowCount(show_samples)
         
-        # Populate table with signal values
         for i in range(show_samples):
-            # Create table items
             index_item = QtWidgets.QTableWidgetItem(str(i))
             time_item = QtWidgets.QTableWidgetItem(f"{signal_obj.time[i]:.6f}")
             value_item = QtWidgets.QTableWidgetItem(f"{signal_obj.signal[i]:.6f}")
             
-            # Make cells read-only
             index_item.setFlags(index_item.flags() & ~QtCore.Qt.ItemIsEditable)
             time_item.setFlags(time_item.flags() & ~QtCore.Qt.ItemIsEditable)
             value_item.setFlags(value_item.flags() & ~QtCore.Qt.ItemIsEditable)
-            
-            # Right align numeric values
+
             time_item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             value_item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-            
-            # Add items to table
+
             self.f_sigvalues.setItem(i, 0, index_item)
             self.f_sigvalues.setItem(i, 1, time_item)
             self.f_sigvalues.setItem(i, 2, value_item)
-        
-        # Adjust column widths
+
         self.f_sigvalues.resizeColumnsToContents()
 
     def plot_file_signal(self):
-        """Plot the file signal"""
         if not hasattr(self, 'file_signal') or self.file_signal is None:
             return
-        
-        # Get the signal object
+
         signal_obj = self.file_signal
-        
-        # Get histogram bins
+
         try:
             bins = int(self.f_histbin.text()) if self.f_histbin.text() else 20
         except ValueError:
             bins = 20
-        
-        # Clear the figure
+
         self.file_figure.clear()
         
-        # Create a gridspec layout for the plot
         from matplotlib import gridspec
-        gs = gridspec.GridSpec(1, 3, width_ratios=[3, 3, 0.5])  # Signal, Histogram, Stats
+        gs = gridspec.GridSpec(1, 3, width_ratios=[3, 3, 0.5])
         
-        # Create subplots using the gridspec
-        ax1 = self.file_figure.add_subplot(gs[0])  # Left plot (signal)
-        ax2 = self.file_figure.add_subplot(gs[1])  # Middle plot (histogram)
-        
-        # Plot signal on left subplot
+        ax1 = self.file_figure.add_subplot(gs[0])
+        ax2 = self.file_figure.add_subplot(gs[1])
+
         ax1.grid(True)
         ax1.axhline(y=0, color='k', linewidth=1.5, alpha=0.3)
         
@@ -1438,34 +1268,29 @@ class SignalProcessApp(object):
         ax1.set_xlabel("Czas [s]")
         ax1.set_ylabel("Amplituda")
         ax1.set_title("Sygnał")
-        
-        # Plot histogram on middle subplot
+
         ax2.hist(signal_obj.signal, bins=bins)
         ax2.set_title("Histogram")
         ax2.set_xlabel("Amplituda")
         ax2.set_ylabel("Częstość")
         
-        # Create stats text
         stats_text = "Statystyki sygnału:\n\n"
         stats_text += f"Wartość średnia:\n{signal_obj.mean_value:.4f}\n\n"
         stats_text += f"Średnia wartość bezwzględna:\n{signal_obj.abs_mean_value:.4f}\n\n"
         stats_text += f"Wartość skuteczna (RMS):\n{signal_obj.rms_value:.4f}\n\n"
         stats_text += f"Wariancja:\n{signal_obj.variance:.4f}\n\n"
         stats_text += f"Średnia moc sygnału:\n{signal_obj.avg_power:.4f}"
-        
-        # Create a text box for stats in the right area
+
         stats_ax = self.file_figure.add_subplot(gs[2])
-        stats_ax.axis('off')  # Hide axis
+        stats_ax.axis('off')
         stats_ax.text(0.05, 0.5, stats_text, 
                     va='center', ha='left',
                     bbox=dict(boxstyle='round', facecolor='whitesmoke', alpha=0.5))
-        
-        # Adjust layout and draw
+
         self.file_figure.tight_layout()
         self.file_canvas.draw()
 
     def refresh_file_plot(self):
-        """Refresh the file signal plot with new histogram bins"""
         if not hasattr(self, 'file_signal') or self.file_signal is None:
             QtWidgets.QMessageBox.warning(None, "Ostrzeżenie", "Brak sygnału do wyświetlenia.")
             return
