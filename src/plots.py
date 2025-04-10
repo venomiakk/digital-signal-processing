@@ -71,3 +71,82 @@ def plot_points(signalobj, bins_no=20, toplot=False):
         plt.show()
     plt.close()
     return fig
+
+def plot_converter(original_signal, sampled_time, sampled_values, toplot=False):
+    """
+    Plots the original signal, sampled/quantized signal, and vertical dashed lines.
+
+    Parameters:
+        original_signal (SignalObject): The original signal object.
+        sampled_time (numpy.ndarray): The time points of the sampled/quantized signal.
+        sampled_values (numpy.ndarray): The values of the sampled/quantized signal.
+        toplot (bool): Whether to display the plot.
+    """
+    signal = original_signal.signal
+    time = original_signal.time
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Plot the original signal
+    ax.plot(time, signal, label="Original Signal", color="blue", linewidth=1.5)
+
+    # Plot the sampled/quantized signal
+    ax.scatter(sampled_time, sampled_values, label="Sampled/Quantized Signal", color="red", zorder=5)
+
+    # Add vertical dashed lines
+    for t, v in zip(sampled_time, sampled_values):
+        ax.vlines(t, ymin=0, ymax=v, linestyles="dashed", colors="gray", alpha=0.7)
+
+    # Add labels, legend, and grid
+    ax.set_xlabel("Time [s]")
+    ax.set_ylabel("Amplitude")
+    ax.set_title("Signal Conversion")
+    ax.legend()
+    ax.grid()
+
+    if toplot:
+        plt.show()
+    plt.close()
+    return fig
+
+def plot_extrapolated_signal(original_signal, sampled_time, sampled_values, extrapolated_time, extrapolated_values, toplot=False):
+    """
+    Plots the extrapolated signal with vertical dashed lines to the points.
+
+    Parameters:
+        original_signal (SignalObject): The original signal object.
+        sampled_time (numpy.ndarray): The time points of the sampled/quantized signal.
+        sampled_values (numpy.ndarray): The values of the sampled/quantized signal.
+        extrapolated_time (numpy.ndarray): The time points of the extrapolated signal.
+        extrapolated_values (numpy.ndarray): The values of the extrapolated signal.
+        toplot (bool): Whether to display the plot.
+    """
+    signal = original_signal.signal
+    time = original_signal.time
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Plot the original signal
+    ax.plot(time, signal, label="Original Signal", color="blue", linewidth=1.5)
+
+    # Plot the sampled/quantized signal
+    ax.scatter(sampled_time, sampled_values, label="Sampled/Quantized Signal", color="red", zorder=5)
+
+    # Plot the extrapolated signal as a staircase
+    ax.step(extrapolated_time, extrapolated_values, where='post', label="Extrapolated Signal", color="green", linewidth=1.5)
+
+    # Add vertical dashed lines
+    for t, v in zip(sampled_time, sampled_values):
+        ax.vlines(t, ymin=0, ymax=v, linestyles="dashed", colors="gray", alpha=0.7)
+
+    # Add labels, legend, and grid
+    ax.set_xlabel("Time [s]")
+    ax.set_ylabel("Amplitude")
+    ax.set_title("Extrapolated Signal")
+    ax.legend()
+    ax.grid()
+
+    if toplot:
+        plt.show()
+    plt.close()
+    return fig
