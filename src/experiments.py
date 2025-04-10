@@ -1,5 +1,7 @@
 from signals import SignalObject, SignalOperations, SignalGenerator
 from plots import plot_points, plot_signal
+from src.converter import SignalConverter
+
 
 def experiment1():
     # signal1 = SignalGenerator.uniformly_distributed_noise(A=1, t_start=0, d=2, sampling_rate=1000)
@@ -56,6 +58,14 @@ def experiment2():
     signal_div = SignalOperations.divide_signals(signal1, signal2)
     plot_signal(signal_div, toplot=True)
 
+def experiment3():
+    signal1 = SignalGenerator.sin_signal(A=1, T=1, t_start=0, d=4, sampling_rate=1000)
+    plot_signal(signal1, toplot=True)
+    sampled_time, sampled_values = SignalConverter.sample_signal(signal1.signal, signal1.time, fs=10)
+    extrapolated_signal = SignalConverter.zero_order_extrapolation(sampled_time, sampled_values)
+    plot_signal(extrapolated_signal, toplot=True)
+
 if __name__ == "__main__":
-    experiment1()
+    #experiment1()
     # experiment2()
+    experiment3()
