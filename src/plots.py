@@ -72,7 +72,7 @@ def plot_points(signalobj, bins_no=20, toplot=False):
     plt.close()
     return fig
 
-def plot_converter(original_signal, sampled_time, sampled_values, toplot=False):
+def plot_sampling(title, original_signal, sampled_time, sampled_values, toplot=False):
     """
     Plots the original signal, sampled/quantized signal, and vertical dashed lines.
 
@@ -88,19 +88,19 @@ def plot_converter(original_signal, sampled_time, sampled_values, toplot=False):
     fig, ax = plt.subplots(figsize=(10, 6))
 
     # Plot the original signal
-    ax.plot(time, signal, label="Original Signal", color="blue", linewidth=1.5)
+    ax.plot(time, signal, label="Sygnał oryginalny", linewidth=1)
 
     # Plot the sampled/quantized signal
-    ax.scatter(sampled_time, sampled_values, label="Sampled/Quantized Signal", color="red", zorder=5)
+    ax.scatter(sampled_time, sampled_values, label="Próbki", color="red", zorder=5)
 
     # Add vertical dashed lines
     for t, v in zip(sampled_time, sampled_values):
         ax.vlines(t, ymin=0, ymax=v, linestyles="dashed", colors="gray", alpha=0.7)
 
     # Add labels, legend, and grid
-    ax.set_xlabel("Time [s]")
-    ax.set_ylabel("Amplitude")
-    ax.set_title("Signal Conversion")
+    ax.set_xlabel("Czas [s]")
+    ax.set_ylabel("Amplituda")
+    ax.set_title(title)
     ax.legend()
     ax.grid()
 
@@ -109,7 +109,41 @@ def plot_converter(original_signal, sampled_time, sampled_values, toplot=False):
     plt.close()
     return fig
 
-def plot_extrapolated_signal(original_signal, sampled_time, sampled_values, extrapolated_time, extrapolated_values, toplot=False):
+def plot_quantization(title, original_signal, quantized_time, quantized_values, toplot=False):
+    """
+    Plots the original signal, quantized signal, and vertical dashed lines.
+
+    Parameters:
+        original_signal (SignalObject): The original signal object.
+        quantized_time (numpy.ndarray): The time points of the quantized signal.
+        quantized_values (numpy.ndarray): The values of the quantized signal.
+        toplot (bool): Whether to display the plot.
+    """
+    signal = original_signal.signal
+    time = original_signal.time
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Plot the original signal
+    ax.plot(time, signal, label="Sygnał oryginalny")
+
+    # Plot the quantized signal
+    ax.plot(quantized_time, quantized_values, label="Kwantyzacja")
+
+
+    # Add labels, legend, and grid
+    ax.set_xlabel("Czas [s]")
+    ax.set_ylabel("Amplituda")
+    ax.set_title(title)
+    ax.legend()
+    ax.grid()
+
+    if toplot:
+        plt.show()
+    plt.close()
+    return fig
+
+def plot_reconstructed_signal(title, original_signal, original_time, sampled_values, sampled_time, reconstructed_values, toplot=False):
     """
     Plots the extrapolated signal with vertical dashed lines to the points.
 
@@ -121,28 +155,26 @@ def plot_extrapolated_signal(original_signal, sampled_time, sampled_values, extr
         extrapolated_values (numpy.ndarray): The values of the extrapolated signal.
         toplot (bool): Whether to display the plot.
     """
-    signal = original_signal.signal
-    time = original_signal.time
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
     # Plot the original signal
-    ax.plot(time, signal, label="Original Signal", color="blue", linewidth=1.5)
+    ax.plot(original_time, original_signal, label="Sygnał oryginalny", linewidth=1.5)
 
     # Plot the sampled/quantized signal
-    ax.scatter(sampled_time, sampled_values, label="Sampled/Quantized Signal", color="red", zorder=5)
+    ax.scatter(sampled_time, sampled_values, label="Próbki", color="red", zorder=5)
 
     # Plot the extrapolated signal as a staircase
-    ax.step(extrapolated_time, extrapolated_values, where='post', label="Extrapolated Signal", color="green", linewidth=1.5)
+    ax.plot(original_time, reconstructed_values,  label="Sygnał zrekonstuowany")
 
     # Add vertical dashed lines
     for t, v in zip(sampled_time, sampled_values):
         ax.vlines(t, ymin=0, ymax=v, linestyles="dashed", colors="gray", alpha=0.7)
 
     # Add labels, legend, and grid
-    ax.set_xlabel("Time [s]")
-    ax.set_ylabel("Amplitude")
-    ax.set_title("Extrapolated Signal")
+    ax.set_xlabel("Czas [s]")
+    ax.set_ylabel("Amplituda")
+    ax.set_title(title)
     ax.legend()
     ax.grid()
 

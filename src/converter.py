@@ -1,88 +1,138 @@
 from matplotlib import pyplot as plt
 
 from signals import SignalObject, SignalGenerator
-from plots import plot_signal, plot_points
+from plots import plot_signal, plot_points, plot_sampling, plot_reconstructed_signal, plot_quantization
 import numpy as np
 
 
 class SignalConverter:
-    @staticmethod
-    def convert(self):
-        # Placeholder for conversion logic
-        return self.signal
-
     @staticmethod    
     def sample_signal(signal, time, fs):
-        Ts = 1 / fs
-        sampled_time = np.arange(time[0], time[-1], Ts)
-        #TODO: sample manually
-        sampled_values = np.interp(sampled_time, time, signal)
+        ori_sampling_rate = int(len(signal) / (time[-1] - time[0]))
+        interval = int(ori_sampling_rate / fs)
+        t_idxs = np.arange(0, len(signal), interval)
+        sampled_time = []
+        for i in range(0, len(signal), interval):
+            sampled_time.append(time[i])
+
+
+        sampled_values = signal[t_idxs]
+        sampled_values = np.array(sampled_values)
+        sampled_time = np.array(sampled_time)
+        # print(len(sampled_time), len(sampled_values))
         return sampled_time, sampled_values
 
     @staticmethod
-    def quantization_with_rounding(time, signal, fs, n_bits):
-
-        sampled_time, sampled_values = SignalConverter.sample_signal(signal, time, fs)
-        # Quantization
-        max_val = np.max(np.abs(sampled_values))
-        step = 2 * max_val / (2 ** n_bits - 1)
-        quantized_signal = np.round(sampled_values / step) * step
-
-        return sampled_time, quantized_signal
-    @staticmethod
-    def quantize_with_truncation_signal(time, signal, fs, n_bits):
-        sampled_time, sampled_values = SignalConverter.sample_signal(signal, time, fs)
-        # Quantization
-        max_val = np.max(np.abs(sampled_values))
-        step = 2 * max_val / (2 ** n_bits - 1)
-        quantized_signal = np.floor(sampled_values / step) * step
-
-        return sampled_time, quantized_signal
+    def quantization_with_rounding(time, signal, n_bits):
+        # 2. Kwantyzacja
+        max_val = np.max(signal)
+        min_val = np.min(signal)
+        level = 2**n_bits - 1
+        step = (max_val - min_val) / level
+        # Zaokrąglanie i denormalizacja
+        signal = signal - min_val  # Normalizacja
+        quantized = step * np.round((signal/step))
+        quantized = quantized + min_val
+        
+        return time, quantized
 
     @staticmethod
-    def zero_order_extrapolation(t_samples, x_samples):
-        t_query = np.linspace(t_samples[0], t_samples[-1], num=len(t_samples))
-        x_query = np.zeros_like(t_query)
-        index1 = 0
-        idx = x_samples[0]
-        for index, i in enumerate(t_query):
-            for j in t_samples:
-                if i == j:
-                    idx = x_samples[index1]
-                    index1 += 1
-            x_query[index] = idx
-        return t_query, x_query
+    def quantization_with_truncation(time, signal, n_bits):
+        max_val = np.max(signal)
+        min_val = np.min(signal)
+        level = 2**n_bits - 1
+        step = (max_val - min_val) / level
+        # Zaokrąglanie i denormalizacja
+        signal = signal - min_val  # Normalizacja
+        quantized = step * np.floor((signal/step))
+        quantized = quantized + min_val
+        
+        return time, quantized
 
     @staticmethod
-    def first_order_hold(t_samples, x_samples):
+    def zero_order_hold(ori_time, sampled_time, sampled_values):
+        """
+        Zwraca sygnał z próbkami i wartościami.
+        """
+        # Generowanie próbkowanego sygnału
+        sampled_signal = np.zeros_like(ori_time)
+        for i in range(len(sampled_time) - 1):
+            mask = (ori_time >= sampled_time[i]) & (ori_time < sampled_time[i + 1])
+            sampled_signal[mask] = sampled_values[i]
+        
+        return sampled_signal
+    
+    @staticmethod
+    def first_order_hold(ori_time, sampled_time, sampled_values):
+        """
+        Zwraca sygnał z próbkami i wartościami.
+        """
+        return np.interp(ori_time, sampled_time, sampled_values)
+    
+    @staticmethod
+    def sinc_interpolation(ori_time, sampled_time, sampled_values):
+        """
+        Zwraca sygnał z próbkami i wartościami.
+        """
+        # Generowanie próbkowanego sygnału
+        sampled_signal = np.zeros_like(ori_time)
+        for i in range(len(sampled_time)):
+            sinc_terms = np.sinc((ori_time - sampled_time[i]) / (sampled_time[1] - sampled_time[0]))
+            sampled_signal += sampled_values[i] * sinc_terms
+        
+        return sampled_signal
 
-        # Generate interpolated time points
-        t_query = np.linspace(t_samples[0], t_samples[-1], num=1000)
-
-        # Perform linear interpolation
-        x_recreated = np.interp(t_query, t_samples, x_samples)
-
-        return t_query, x_recreated
+    
+    @staticmethod
+    def mse(x, xz):
+        """(C1) Błąd średniokwadratowy"""
+        return np.mean((x - xz) ** 2)
 
     @staticmethod
-    def sinc_interpolation(t_samples, x_samples):
+    def snr(x, xz):
+        """(C2) Stosunek sygnał - szum w dB"""
+        power_signal = np.sum(x ** 2)
+        power_noise = np.sum((x - xz) ** 2)
+        return 10 * np.log10(power_signal / power_noise)
 
-        t_query = np.linspace(t_samples[0], t_samples[-1], num=1000)
+    @staticmethod
+    def psnr(x, xz):
+        """(C3) Szczytowy stosunek sygnał - szum w dB"""
+        mse_val = SignalConverter.mse(x, xz)
+        max_signal = np.max(x)
+        return 10 * np.log10((max_signal) / mse_val)
 
-        x_recreated = np.zeros_like(t_query)
-        # Perform sinc interpolation
-        for i, t in enumerate(t_query):
-            sinc_terms = np.sinc((t - t_samples) / (t_samples[1] - t_samples[0]))
-            x_recreated[i] = np.sum(x_samples * sinc_terms)
-
-        return t_query, x_recreated
-
+    @staticmethod
+    def md(x, xz):
+        """(C4) Maksymalna różnica"""
+        return np.max(np.abs(x - xz))
+    
+    @staticmethod
+    def enob(x, xz):
+        """Efektywna liczba bitów"""
+        snr = SignalConverter.snr(x, xz)
+        return (snr - 1.76) / 6.02
 
 if __name__ == "__main__":
-    print("Signal converter:")
-    signal = SignalGenerator.sin_signal(A=1, T=2, t_start=0, d=3, sampling_rate=1000)
-    plot_signal(signal, toplot=True)
+
+    
+    signal = SignalGenerator.sin_signal(A=1, T=1, t_start=0, d=2, sampling_rate=1000)
+    quantized_time, quantized_values = SignalConverter.quantization_with_rounding(signal.time, signal.signal, n_bits=4)
+    plot_quantization("Kwantyzacja z zaokragleniem", signal, quantized_time, quantized_values, toplot=True)
+    quantized_time, quantized_values = SignalConverter.quantization_with_truncation(signal.time, signal.signal, n_bits=4)
+    plot_quantization("Kwantyzacja z obcinaniem", signal, quantized_time, quantized_values, toplot=True)
 
     sampled_time, sampled_values = SignalConverter.sample_signal(signal.signal, signal.time, fs=10)
-    sampled_signal = SignalObject(sampled_values, sampled_time, signal.sampling_rate, A=signal.A, T=signal.T, t_start=signal.t_start, d=signal.d)
-    plot_points(sampled_signal, toplot=True)
+    plot_sampling("Próbkowanie", signal, sampled_time, sampled_values, toplot=True)
+
+    reconstructed_signal = SignalConverter.zero_order_hold(signal.time, sampled_time, sampled_values)
+    plot_reconstructed_signal("Rekonstrukcja zerowym trzymaniem", signal.signal, signal.time, sampled_values, sampled_time, reconstructed_signal, toplot=True)
+    
+    reconstructed_signal = SignalConverter.first_order_hold(signal.time, sampled_time, sampled_values)
+    plot_reconstructed_signal("Rekonstrukcja pierwszym trzymaniem", signal.signal, signal.time, sampled_values, sampled_time, reconstructed_signal, toplot=True)
+    
+    reconstructed_signal = SignalConverter.sinc_interpolation(signal.time, sampled_time, sampled_values)
+    plot_reconstructed_signal("Rekonstrukcja sinc", signal.signal, signal.time, sampled_values, sampled_time, reconstructed_signal, toplot=True)
+
+
+
