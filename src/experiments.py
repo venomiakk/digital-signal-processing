@@ -171,9 +171,24 @@ class ConverterExperiments:
         signal1 = SignalGenerator.sin_signal(A=2, T=0.005, t_start=0, d=0.04, sampling_rate=1000000)
         sampled_time, sampled_values = SignalConverter.sample_signal(signal1.signal, signal1.time, fs=300)
         plot_sampling("Próbkowanie", signal1, sampled_time, sampled_values, toplot=True)
+
+    def test_exp():
+        signal1 = SignalGenerator.sin_signal(A=1, T=0.5, t_start=0, d=2, sampling_rate=1000)
+        qt1, q1 = SignalConverter.quantization_with_truncation(signal1.time, signal1.signal, n_bits=4)
+        qt1, q2 = SignalConverter.quantization_with_rounding(signal1.time, signal1.signal, n_bits=4)
+
+        sampled_time, sampled_values = SignalConverter.sample_signal(signal1.signal, signal1.time, fs=10)
+        reconstructed_signal = SignalConverter.zero_order_hold(signal1.time, sampled_time, sampled_values)
+        reconstructed_signal2 = SignalConverter.first_order_hold(signal1.time, sampled_time, sampled_values)
+        reconstructed_signal3 = SignalConverter.sinc_interpolation(signal1.time, sampled_time, sampled_values)
+
+        plot_reconstructed_signal("Rekonstrukcja", signal1.signal, signal1.time, sampled_values, sampled_time, reconstructed_signal, toplot=True)
+
 if __name__ == "__main__":
     # ConverterExperiments.experiment_sinus1()
     # ConverterExperiments.experiment_sinus2()
     # ConverterExperiments.experiment_tri3()
     # ConverterExperiments.experiment_tri4()
-    ConverterExperiments.aliasing_experiment()
+    # ConverterExperiments.aliasing_experiment()
+    ConverterExperiments.test_exp()
+    #TODO DODAC REKONSTUKCJE SINC DO ALIASINGU
