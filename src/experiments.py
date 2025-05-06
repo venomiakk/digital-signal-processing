@@ -166,11 +166,15 @@ class ConverterExperiments:
     @staticmethod
     def aliasing_experiment():
         signal1 = SignalGenerator.sin_signal(A=2, T=0.001, t_start=0, d=0.01, sampling_rate=1000000)
-        sampled_time, sampled_values = SignalConverter.sample_signal(signal1.signal, signal1.time, fs=1200)
+        sampled_time, sampled_values = SignalConverter.sample_signal(signal1.signal, signal1.time, fs=450)
         plot_sampling("Próbkowanie", signal1, sampled_time, sampled_values, toplot=True)
+        reconstructed_signal = SignalConverter.sinc_interpolation(signal1.time, sampled_time, sampled_values)
+        plot_reconstructed_signal("Rekonstrukcja", signal1.signal, signal1.time, sampled_values, sampled_time, reconstructed_signal, toplot=True)
         signal1 = SignalGenerator.sin_signal(A=2, T=0.005, t_start=0, d=0.04, sampling_rate=1000000)
-        sampled_time, sampled_values = SignalConverter.sample_signal(signal1.signal, signal1.time, fs=300)
+        sampled_time, sampled_values = SignalConverter.sample_signal(signal1.signal, signal1.time, fs=70)
         plot_sampling("Próbkowanie", signal1, sampled_time, sampled_values, toplot=True)
+        reconstructed_signal = SignalConverter.sinc_interpolation(signal1.time, sampled_time, sampled_values)
+        plot_reconstructed_signal("Rekonstrukcja", signal1.signal, signal1.time, sampled_values, sampled_time, reconstructed_signal, toplot=True)
 
     def test_exp():
         signal1 = SignalGenerator.sin_signal(A=1, T=0.5, t_start=0, d=2, sampling_rate=1000)
@@ -189,6 +193,6 @@ if __name__ == "__main__":
     # ConverterExperiments.experiment_sinus2()
     # ConverterExperiments.experiment_tri3()
     # ConverterExperiments.experiment_tri4()
-    # ConverterExperiments.aliasing_experiment()
-    ConverterExperiments.test_exp()
+    ConverterExperiments.aliasing_experiment()
+    # ConverterExperiments.test_exp()
     #TODO DODAC REKONSTUKCJE SINC DO ALIASINGU
