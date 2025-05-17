@@ -176,6 +176,7 @@ class ConverterExperiments:
         reconstructed_signal = SignalConverter.sinc_interpolation(signal1.time, sampled_time, sampled_values)
         plot_reconstructed_signal("Rekonstrukcja", signal1.signal, signal1.time, sampled_values, sampled_time, reconstructed_signal, toplot=True)
 
+    @staticmethod
     def test_exp():
         signal1 = SignalGenerator.sin_signal(A=1, T=0.5, t_start=0, d=2, sampling_rate=1000)
         qt1, q1 = SignalConverter.quantization_with_truncation(signal1.time, signal1.signal, n_bits=4)
