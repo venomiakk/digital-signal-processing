@@ -1,14 +1,13 @@
 import numpy as np
 
-from src.filters import CustomSignalFilters
-
+from filters import CustomSignalFilters
 
 class Simulation:
     def __init__(self,signal,
                  sampling_freq=1000,         # [Hz]
                  signal_speed=100.0,         # [m/s] - abstrakcyjny ośrodek
                  object_speed=1.0,           # [m/s] - prędkość obiektu
-                 buffer_duration=0.1,        # [s]
+                 buffer_duration=0.5,        # [s] - zwiększone z 0.1 na 0.5
                  f1=50, f2=120,              # składniki sygnału sondującego
                  report_interval=0.2         # [s]
                  ):
@@ -41,7 +40,10 @@ class Simulation:
     def estimate_distance(self, reflected_signal):
         corr = CustomSignalFilters.correlation_via_convolution(reflected_signal, self.probe_signal)
         max_index = np.argmax(corr)
-        delay_est = max_index * self.dt
+        
+        # Zakładając, że corr ma długość 2*buffer_len-1
+        zero_lag_index = len(corr) // 2
+        delay_est = (max_index - zero_lag_index) * self.dt
         distance_est = (delay_est * self.v_signal) / 2
         return distance_est
 
@@ -67,3 +69,18 @@ class Simulation:
         steps = int(duration_sec / self.dt)
         for _ in range(steps):
             self.step()
+
+if __name__ == "__main__":
+    # Przykładowe użycie
+    fs = 1000  # Częstotliwość próbkowania
+    buffer_duration = 0.5  # [s]
+    buffer_len = int(buffer_duration * fs)
+    
+    # Sygnał o odpowiedniej długości
+    t = np.arange(buffer_len) / fs
+    f1 = 50
+    f2 = 120
+    signal = np.sin(2 * np.pi * f1 * t) + np.sin(2 * np.pi * f2 * t)
+    
+    sim = Simulation(signal, buffer_duration=buffer_duration)
+    sim.run(duration_sec=5)
