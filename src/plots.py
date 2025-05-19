@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.figure import Figure
 
 
@@ -181,4 +182,40 @@ def plot_reconstructed_signal(title, original_signal, original_time, sampled_val
     if toplot:
         plt.show()
     plt.close()
+    return fig
+
+def plot_filters(original_signal, dirty_signal, filtered_signal):
+    """
+    Plots the original, noisy, and filtered signals after adjusting their time arrays
+    to match the lengths of their respective signal arrays.
+
+    Parameters:
+        original_signal (SignalObject): The original signal object with `signal` and `time` attributes.
+        dirty_signal (SignalObject): The noisy signal object with `signal` and `time` attributes.
+        filtered_signal (SignalObject): The filtered signal object with `signal` and `time` attributes.
+    """
+    def adjust_time(signal_obj):
+        # Generate a new time array with the same length as the signal
+        return np.linspace(signal_obj.time[0], signal_obj.time[-1], len(signal_obj.signal))
+
+    # Adjust time arrays
+    original_time = adjust_time(original_signal)
+    dirty_time = adjust_time(dirty_signal)
+    filtered_time = adjust_time(filtered_signal)
+
+    # Plot the signals
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    ax.plot(dirty_time, dirty_signal.signal, label="Noisy Signal", linewidth=1.5)
+    ax.plot(original_time, original_signal.signal, label="Original Signal", linewidth=1.5)
+    ax.plot(filtered_time, filtered_signal.signal, label="Filtered Signal", linewidth=1.5, color='pink')
+
+    # Add labels, legend, and grid
+    ax.set_xlabel("Time [s]")
+    ax.set_ylabel("Amplitude")
+    ax.set_title("Signal Comparison")
+    ax.legend()
+    ax.grid()
+
+    plt.show()
     return fig

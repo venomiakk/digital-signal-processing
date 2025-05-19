@@ -133,7 +133,7 @@ if __name__ == "__main__":
     
     # Create a signal with multiple frequency components
     signal1 = SignalGenerator.sin_signal(A=1, T=0.1, d=t_duration, sampling_rate=fs)  # 10 Hz sine wave
-    signal2 = SignalGenerator.sin_signal(A=0.5, T=0.02, d=t_duration, sampling_rate=fs)  # 50 Hz sine wave
+    signal2 = SignalGenerator.gaussian_noise(A=0.5, d=t_duration, sampling_rate=fs)  # 50 Hz sine wave
     
     # Combine signals
     mixed_signal = SignalOperations.add_signals(signal1, signal2)

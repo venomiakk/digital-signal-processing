@@ -2,16 +2,15 @@ import numpy as np
 
 class CustomSignalFilters:
     @staticmethod
-    def convolve(h, x):
-        n_len = len(x)
-        m_len = len(h)
-        y = np.zeros(n_len + m_len - 1)
-
-        for n in range(n_len + m_len - 1):
-            for k in range(m_len):
-                if n - k >= 0 and n - k < n_len:
-                    y[n] += h[k] * x[n - k]
-
+    def convolve(x, h):
+        N = len(x)
+        M = len(h)
+        y = np.zeros(N + M - 1)
+        for n in range(N + M - 1):
+            for k in range(M):
+                i = n - k
+                if 0 <= i < N:
+                    y[n] += x[i] * h[k]
         return y
 
     @staticmethod
@@ -26,22 +25,40 @@ class CustomSignalFilters:
         return h
 
     @staticmethod
-    def hamming_window(M):
-        return 0.53836 - 0.46164 * np.cos(2 * np.pi * np.arange(M) / (M - 1))
+    def apply_hamming_window(signal_func):
+        signal = signal_func
+        N = len(signal)
+        window = 0.53836 - 0.46164 * np.cos(2 * np.pi * np.arange(N) / (N - 1))
+        return signal * window
 
     @staticmethod
-    def apply_window(h, window_func):
-        w = window_func(len(h))
-        return h * w
+    def apply_hanning_window(signal_func):
+        signal = signal_func
+        N = len(signal)
+        window = 0.5 - 0.5 * np.cos(2 * np.pi * np.arange(N) / (N - 1))
+        return signal * window
+
+    @staticmethod
+    def apply_blackman_window(signal_func):
+        signal = signal_func
+        N = len(signal)
+        window = (0.42
+                  - 0.5 * np.cos(2 * np.pi * np.arange(N) / (N - 1))
+                  + 0.08 * np.cos(4 * np.pi * np.arange(N) / (N - 1)))
+        return signal * window
+
+
 
     @staticmethod
     def highpass_from_lowpass(h):
-        return h * (-1) ** np.arange(len(h))
+        n = np.arange(len(h))
+        s = (-1) ** n
+        return h * s
 
     @staticmethod
     def bandpass_from_lowpass(h):
         n = np.arange(len(h))
-        s = 2 * np.sin(np.pi * (n - (len(h) - 1) // 2) / 2)  # uwzględnij przesunięcie środka
+        s = 2 * np.sin(np.pi * n / 2)
         return h * s
     @staticmethod
     def aplly_filter(signal, cutoff_freq, filter_order=5, filter_type='low'):
@@ -64,26 +81,28 @@ class CustomSignalFilters:
             raise ValueError("Invalid filter type. Choose 'low', 'high', or 'band'.")
 
         # Apply window
-        h = CustomSignalFilters.apply_window(h, CustomSignalFilters.hamming_window)
+        h = CustomSignalFilters.apply_hamming_window(h)
 
         # Convolve with the signal
-        return CustomSignalFilters.convolve(h, signal)
+        return CustomSignalFilters.convolve(signal, h)
 
     @staticmethod
     def correlation_direct(x, h):
         N = len(x)
         M = len(h)
+        h = h[::-1]  # odwrócenie h
         result = np.zeros(N + M - 1)
         for n in range(len(result)):
             for k in range(M):
-                if 0 <= n - k < N:
-                    result[n] += h[k] * x[n - k]
+                i = n - k
+                if 0 <= i < N:
+                    result[n] += x[i] * h[k]
         return result
 
     @staticmethod
     def correlation_via_convolution(x, h):
-        x_flipped = x[::-1]  # Odbicie sygnału x
-        return CustomSignalFilters.convolve(x_flipped, h)
+        h_flipped = h[::-1]
+        return CustomSignalFilters.convolve(h_flipped, x)
 
 if __name__ == "__main__":
     # Example usage
