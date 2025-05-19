@@ -29,7 +29,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-./src/filter_plots
+./src/filter_plots/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -174,3 +174,4 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+/src/filter_plots
