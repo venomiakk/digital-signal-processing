@@ -374,4 +374,3 @@ if __name__ == "__main__":
 
     # ConverterExperiments.experiment_correlation()
     # ConverterExperiments.experiment_convolution()
-    #TODO DODAC REKONSTUKCJE SINC DO ALIASINGU

@@ -10,8 +10,6 @@ if __name__ == "__main__":
 
     conv = np.convolve(sin.signal, noise.signal, mode='full')
 
-    conv2 = CustomSignalFilters.convolve(sin.signal, noise.signal)
-
     plt.figure(figsize=(8, 10))
     plt.subplot(3, 1, 1)
     plt.plot(sin.time, sin.signal, label='Sine Wave')
@@ -20,6 +18,8 @@ if __name__ == "__main__":
     plt.subplot(3, 1, 3)
     plt.plot(conv, label='Convolution Result')
     plt.show()
+
+    conv2 = CustomSignalFilters.convolve(sin.signal, noise.signal)
 
     plt.figure(figsize=(8, 10))
     plt.subplot(3, 1, 1)
