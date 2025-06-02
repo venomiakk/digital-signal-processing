@@ -219,3 +219,31 @@ def plot_filters(original_signal, dirty_signal, filtered_signal):
 
     plt.show()
     return fig
+
+def plot_raw_signal(signal, time, toplot=False):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(time, signal, label="Sygnał")
+    ax.set_xlabel("Czas [s]")
+    ax.set_ylabel("Amplituda")
+    ax.set_title("Sygnał")
+    # ax.legend()
+    ax.grid()
+
+    if toplot:
+        plt.show()
+    plt.close()
+    return fig
+
+def plot_raw_points(signal, time, toplot=False):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.scatter(time, signal, label="Sygnał")
+    ax.set_xlabel("Czas [s]")
+    ax.set_ylabel("Amplituda")
+    ax.set_title("Sygnał")
+    # ax.legend()
+    ax.grid()
+
+    if toplot:
+        plt.show()
+    plt.close()
+    return fig
