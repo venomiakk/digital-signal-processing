@@ -176,3 +176,5 @@ cython_debug/
 .pypirc
 /src/filter_plots
 /src/plots
+results.csv
+/plots

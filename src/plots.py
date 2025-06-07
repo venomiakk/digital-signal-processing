@@ -220,12 +220,16 @@ def plot_filters(original_signal, dirty_signal, filtered_signal):
     plt.show()
     return fig
 
-def plot_raw_signal(signal, time, toplot=False):
+def plot_raw_signal(signal, time=None, toplot=False, title=""):
     fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(time, signal, label="Sygnał")
-    ax.set_xlabel("Czas [s]")
+    if time is None:
+        ax.plot(signal, label="Sygnał", marker='o', markersize=3, linestyle='--', linewidth=1)
+        ax.set_xlabel("k")
+    else:
+        ax.plot(time, signal, label="Sygnał", marker='o', markersize=3, linestyle='--', linewidth=1)
+        ax.set_xlabel("Czas [s]")
     ax.set_ylabel("Amplituda")
-    ax.set_title("Sygnał")
+    ax.set_title("Sygnał " + title)
     # ax.legend()
     ax.grid()
 
@@ -244,6 +248,70 @@ def plot_raw_points(signal, time, toplot=False):
     ax.grid()
 
     if toplot:
+        plt.show()
+    plt.close()
+    return fig
+
+
+def plot_W1(X, title="", stem=True, tofile=False):
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+    fig.suptitle(title, fontsize=16)
+    
+    # Część rzeczywista
+    if stem:
+        ax1.stem(X.real, basefmt=' ', linefmt='C0-')
+    else:
+        ax1.plot(X.real, 'C0-', marker='o', markersize=3, linewidth=1)
+    ax1.set_title("Część rzeczywista")
+    ax1.set_xlabel("k")
+    ax1.set_ylabel("Re{X[k]}")
+    ax1.grid()
+
+    # Część urojona
+    if stem:
+        ax2.stem(X.imag, basefmt=' ', linefmt='C1-')
+    else:
+        ax2.plot(X.imag, 'C1-', marker='o', markersize=3, linewidth=1)
+    ax2.set_title("Część urojona")
+    ax2.set_xlabel("k")
+    ax2.set_ylabel("Im{X[k]}")
+    ax2.grid()
+
+    plt.tight_layout()
+    
+    if tofile:
+        plt.show()
+    plt.close()
+    return fig
+
+
+def plot_W2(X, title="", stem=True, tofile=False):
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+    fig.suptitle(title, fontsize=16)
+    
+    # Moduł
+    if stem:
+        ax1.stem(np.abs(X), basefmt=' ', linefmt='C0-')
+    else:
+        ax1.plot(np.abs(X), 'C0-', marker='o', markersize=3, linestyle='--', linewidth=1)
+    ax1.set_title("Moduł")
+    ax1.set_xlabel("k")
+    ax1.set_ylabel("|X[k]|")
+    ax1.grid()
+
+    # Argument (faza)
+    if stem:
+        ax2.stem(np.angle(X), basefmt=' ', linefmt='C1-')
+    else:
+        ax2.plot(np.angle(X), 'C1-', marker='o', markersize=3, linestyle='--', linewidth=1)
+    ax2.set_title("Argument (faza)")
+    ax2.set_xlabel("k")
+    ax2.set_ylabel("arg(X[k]) [rad]")
+    ax2.grid()
+
+    plt.tight_layout()
+    
+    if tofile:
         plt.show()
     plt.close()
     return fig
