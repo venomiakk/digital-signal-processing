@@ -279,7 +279,7 @@ def plot_W1(X, title="", stem=True, tofile=False):
 
     plt.tight_layout()
     
-    if tofile:
+    if tofile==False:
         plt.show()
     plt.close()
     return fig

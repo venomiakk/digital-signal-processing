@@ -186,7 +186,7 @@ def test_dft():
     npdft = fft(s2)  # NumPy DFT
 
     X_dft = Transfomations.dft(s2)
-    x2 = Transfomations.reverse_fourier(X_dft)
+    x2 = Transfomations.reverse_fourier(npdft)
 
     plot_raw_signal(s2, t, toplot=True)
     plot_raw_signal(npdft, t, toplot=True)
@@ -195,7 +195,7 @@ def test_dft():
 
     plot_W1(npdft, title="NumPy")
     plot_W2(npdft, title="NumPy")
-    plot_W1(X_dft, title="Sygnal", stem=True)
+    plot_W1(X_dft, title="Sygnal")
     plot_W2(X_dft, title="sygnal")
 
 def test_fft():
@@ -260,6 +260,7 @@ def test_fct():
     plot_raw_signal(npdct, t, toplot=True)
     plot_raw_signal(X_fct, t, toplot=True)
     plot_raw_signal(x2_fct, t, toplot=True)
+    plot_W1(X_fct, title="FCT")
 
 
 
@@ -304,8 +305,8 @@ if __name__ == "__main__":
     przekształcenia falkowego nie trzeba
     # '''
     # test_dft()
-    test_fft()
+    # test_fft()
     # test_dct()
-    # test_fct()
+    test_fct()
     # test_hadamard()
     # test_fast_hadamard()
